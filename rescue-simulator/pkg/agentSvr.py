@@ -12,14 +12,14 @@ from state import State
 from random import randint
 
 ## Importa o algoritmo para o plano
-from randomPlan import RandomPlan
+from savePlan import SavePlan
 
 ##Importa o Planner
 sys.path.append(os.path.join("pkg", "planner"))
 from planner import Planner
 
 ## Classe que define o Agente
-class AgentRnd:
+class AgentSvr:
     def __init__(self, model, configDict):
         """ 
         Construtor do agente random
@@ -69,7 +69,7 @@ class AgentRnd:
         ## TODO: criar um novo plano (CustomPlan)
         ## plano de mapeamento
         ## Cria a instancia do plano para se movimentar aleatoriamente no labirinto (sem nenhuma acao) 
-        self.plan = RandomPlan(4, 4, self.prob.goalState, initial, "goal", self.mesh)
+        self.plan = SavePlan(4, 4, self.prob.goalState, initial, "goal", self.mesh)
 
         ## TODO: agente de mapeamento
         ## adicionar crencas sobre o estado do ambiente ao plano - neste exemplo, o agente faz uma copia do que existe no ambiente.

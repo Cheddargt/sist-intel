@@ -52,9 +52,11 @@ def main():
     model.draw()
 
     # Cria um agente
+    ##TODO: criar os outros dois agentes
     agent = AgentRnd(model,configDict)
 
     ## Ciclo de raciocínio do agente
+    ##TODO: esperar um agente ir e voltar -> mandar o outro agente
     agent.deliberate()
     while agent.deliberate() != -1:
         model.draw()
