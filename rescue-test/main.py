@@ -66,14 +66,39 @@ def calcularRetorno(agent_init_pos, agent_pos, ag_vasc_visited):
     menorCusto = INFINITE
     hora_de_voltar = False
 
+def tentarMover(agent_pos, new_pos, map):
+    x, y = agent_pos[0] + new_pos[0], agent_pos[0] + new_pos[1]
+    if (x < 0 or y < 0):
+        return False
+    if (x > len(map) or y < 0):
+        return False
+    if (map[x][y]):
+
+# def dfs(visitados, ag_vasc_visited, pos_atual):
+#     if pos_atual not in visitados:
+#         print (pos_atual)
+#         visitados.add(pos_atual)
+#         for neighbour in ag_vasc_visited[pos_atual]:
+#             dfs(visitados, ag_vasc_visited, neighbour)
 
 
-def dfs(visitados, ag_vasc_visited, pos_atual):
-    if pos_atual not in visitados:
-        print (pos_atual)
-        visitados.add(pos_atual)
-        for neighbour in ag_vasc_visited[pos_atual]:
-            dfs(visitados, ag_vasc_visited, neighbour)
+
+# def dfs(self):
+#         """
+#         DFS: Busca em profundidade
+#             Retorna a próxima coordenada não visitada
+#         """
+#         for direction in ["NW", "NE", "SW", "SE", "N", "W", "E", "S"]:
+#             x, y = self.directionCoord(direction)
+#             if self.checkValidCoord(x, y) and not self.visited[y][x]:
+#                 self.stack.append((x, y))
+
+#         # Próxima coordenada não visitada da pilha
+#         while self.stack:
+#             x, y = self.stack.pop(-1)
+#             if not self.visited[y][x]:
+#                 return x, y
+#         return None, None
 
 def explorarMapa(agent_init_pos, map, ag_vasc_visited, bateria_vasc):
     ## "visita" a posição inicial do agente
