@@ -3,10 +3,22 @@ import sys
 import os
 import time
 
-## 2 = parede
+## 3 = parede
+## 4 = parede visitada
 ## 1 = vítima
+## 2 = vítima visitada
 ## 0 = não visitado
-## -1 = visitado 1x
+## -1 = visitado
+
+possibilities = ["S", "L", "N", "O", "SE", "NE", "SO", "NO"]
+movePos = { "N" : (-1, 0),
+                    "S" : (1, 0),
+                    "L" : (0, 1),
+                    "O" : (0, -1),
+                    "NE" : (-1, 1),
+                    "NO" : (-1, -1),
+                    "SE" : (1, 1),
+                    "SO" : (1, -1)}
 
 def getConfig():
     arq = open(os.path.join("config_data","config.txt"),"r")
@@ -66,13 +78,75 @@ def calcularRetorno(agent_init_pos, agent_pos, ag_vasc_visited):
     menorCusto = INFINITE
     hora_de_voltar = False
 
-def tentarMover(agent_pos, new_pos, map):
-    x, y = agent_pos[0] + new_pos[0], agent_pos[0] + new_pos[1]
+    return caminho, hora_de_voltar
+
+def tentarMover(agent_pos, mov_dir, map, ag_vasc_walls, ag_vasc_vict):
+
+    time.sleep(1)
+    printMap(map)
+    print("agent_pos: ", agent_pos)
+    print("vitimas encontradas: ", ag_vasc_vict)
+
+    
+    new_pos = [agent_pos[0] + movePos[mov_dir][0], agent_pos[1] + movePos[mov_dir][1]]
+    x, y = new_pos[0], new_pos[1]
+
+    ## fora do mapa
     if (x < 0 or y < 0):
-        return False
-    if (x > len(map) or y < 0):
-        return False
-    if (map[x][y]):
+        return 
+    if (x >= len(map)):
+        return
+    if (y >= len(map[0])):
+        return 
+    
+    ## se encontrar uma parede
+    if (map[x][y] == 3):
+        # gasta 1 de bateria
+        # gasta 1 de tempo
+        map[x][y] = 4 # parede visitada
+        ag_vasc_walls.append([x, y])
+
+        # não se move
+        return 
+    
+    if (map[x][y] == 0):
+        # gasta 1 de bateria
+        # gasta 1 de tempo
+        map[x][y] = -1 # posição visitada
+        agent_pos = [x, y]
+        tentarMover(agent_pos, "L", map, ag_vasc_walls, ag_vasc_vict)
+        tentarMover(agent_pos, "S", map, ag_vasc_walls, ag_vasc_vict)
+        tentarMover(agent_pos, "N", map, ag_vasc_walls, ag_vasc_vict)
+        tentarMover(agent_pos, "O", map, ag_vasc_walls, ag_vasc_vict)
+
+    ## encontrou uma vítima
+    if (map[x][y] == 1):
+        ag_vasc_vict.append([x, y])
+        # gasta 1 de bateria
+        # gasta 1 de tempo
+        # scaneia gastando tempo e bateria
+        map[x][y] = 2 # posição visitada
+        agent_pos = [x, y]
+        tentarMover(agent_pos, "S", map, ag_vasc_walls, ag_vasc_vict)
+        tentarMover(agent_pos, "L", map, ag_vasc_walls, ag_vasc_vict)
+        tentarMover(agent_pos, "O", map, ag_vasc_walls, ag_vasc_vict)
+        tentarMover(agent_pos, "N", map, ag_vasc_walls, ag_vasc_vict)
+
+
+    ## se o movimento for na diagonal
+    ## if (0,0) (1,1)
+    ## y2-y1 x2-x1
+    # if (map[x][y] == 2):
+    #     # gasta 1 de bateria
+    #     # gasta 1 de tempo
+    #     map[x][y] = 3 # parede visitada
+    #     ag_vasc_walls.append(map[x], map[y])
+
+    #     # não se move
+    #     return False
+    
+
+    
 
 # def dfs(visitados, ag_vasc_visited, pos_atual):
 #     if pos_atual not in visitados:
@@ -100,12 +174,17 @@ def tentarMover(agent_pos, new_pos, map):
 #                 return x, y
 #         return None, None
 
-def explorarMapa(agent_init_pos, map, ag_vasc_visited, bateria_vasc):
+def explorarMapa(agent_init_pos, map, ag_vasc_visited, 
+    bateria_vasc, ag_vasc_walls, ag_vasc_vict):
+
+    agent_pos = [0, 0]
+
     ## "visita" a posição inicial do agente
-    map[agent_init_pos[0]] [agent_init_pos[1]] = -1;
+    map[agent_init_pos[0]] [agent_init_pos[1]] = -1
 
     ## inicializa posição atual do agente com a posição inicial
-    agent_pos = agent_init_pos
+    # agent_pos = (int (agent_init_pos[0]), int (agent_init_pos[1]))
+    # print ("variável: ", "agent_pos", "//", "valor: ", agent_pos, "//", "tipo: ", type(agent_pos))
 
     ## adiciona posição visitada a um vetor de posições visitadas  
     ag_vasc_visited.append(agent_init_pos)
@@ -113,37 +192,12 @@ def explorarMapa(agent_init_pos, map, ag_vasc_visited, bateria_vasc):
     ## verifica se possui bateria pra voltar + 2 (pra escanear uma vítima)
     ## calcularRetorno 
     while not (calcularRetorno(agent_init_pos, agent_pos, ag_vasc_visited)[0]):
+        tentarMover(agent_pos, "S", map, ag_vasc_walls, ag_vasc_vict)
+        printMap(map)
+        print("agent_pos: ", agent_pos)
 
-        possibilities = ["S", "L", "N", "O", "SE", "NE", "SO", "NO"]
-        movePos = { "N" : (-1, 0),
-                    "S" : (1, 0),
-                    "L" : (0, 1),
-                    "O" : (0, -1),
-                    "NE" : (-1, 1),
-                    "NO" : (-1, -1),
-                    "SE" : (1, 1),
-                    "SO" : (1, -1)}
-
-
-        ## tenta sul
-        movDirection = possibilities[0]
-
-        ## se n deu, tenta leste
-
-        ## se n deu, tenta norte
-
-        ## se n deu, tenta leste
-
-        ## se n deu, tenta oeste    
-
-        ## se n deu, volta 1 e tenta tudo dnv
-
-
-        prox_mov = agent_pos[0] + movePos[movDirection][0], agent_pos[1] + movePos[movDirection][1]
-        ## vai para fora do labirinto
+        time.sleep(1)
         
-        
-
 
     ## retorna pra base pelo melhor caminho
 
@@ -155,6 +209,8 @@ def main():
     configDict = getConfig()
     ambienteDict = getAmbiente()
     ag_vasc_visited = []
+    ag_vasc_walls = []
+    ag_vasc_vict = []
 
     bateria_vasc = int(configDict["Bv"])
     ## print ("variável: ", "bateria_vasc", "//", "valor: ", bateria_vasc, "//", "tipo: ", type(bateria_vasc))
@@ -166,7 +222,7 @@ def main():
     map = [[0 for col in range(configDict["maxLin"])] for row in range(configDict["maxCol"])]
     
     ## imprime o mapa
-    printMap(map);
+    printMap(map)
 
     print("dicionario ambiente: ", ambienteDict)
 
@@ -179,7 +235,7 @@ def main():
     for i in range(0, len(ambienteDict["Parede"])):
         wall_coord = ambienteDict["Parede"][i].split(",")
         x, y = int(wall_coord[0]), int(wall_coord[1])
-        map[x][y] = 2
+        map[x][y] = 3
 
     ## adiciona as vítimas no mapa 
     for i in range(0, len(ambienteDict["Vitima"])):
@@ -188,7 +244,8 @@ def main():
         map[i][j] = 1
 
     ## alterar o mapa dentro da função altera fora também, é ponteiro
-    explorarMapa(agent_init_pos, map, ag_vasc_visited, bateria_vasc)
+    explorarMapa(agent_init_pos, map, ag_vasc_visited, 
+        bateria_vasc, ag_vasc_walls, ag_vasc_vict)
 
     ## após a exploração do mapa
     ## ag_vasc_visited terá uma ordem de visitação do agente vasculhador
@@ -197,6 +254,10 @@ def main():
                         [2,4], [1,4], [0,4], [1,3], [2,3],
                         [3,3], [3,2], [2,2], [3,1], [1,1]
                         [0,1]]
+
+    ## ag_vasc_walls terá um vetor com as paredes encontradas
+
+    ## ag_vasc_vict terá um vetor com as vítimas encontradas
 
     ## haverá também um vetor com paredes
 
