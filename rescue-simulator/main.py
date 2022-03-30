@@ -2,10 +2,12 @@ import sys
 import os
 import time
 
+
 ## Importa as classes que serao usadas
 sys.path.append(os.path.join("pkg"))
-from model import Model
-from agentRnd import AgentRnd
+from pkg.model import Model
+from pkg.agentRnd import AgentRnd
+# from pkg.agentLclzr import AgentLclzr
 
 
 ## Metodo utilizado para permitir que o usuario construa o labirindo clicando em cima
@@ -33,6 +35,9 @@ def main():
         values = line.split("=")
         configDict[values[0]] = int(values[1])
 
+
+     
+
     print("dicionario config: ", configDict)
 
     # Cria o ambiente (modelo) = Labirinto com suas paredes
@@ -51,9 +56,13 @@ def main():
     model.setGoalPos(model.maze.board.posGoal[0],model.maze.board.posGoal[1])  
     model.draw()
 
+    knownMap = []
+    wallMap = []
+
     # Cria um agente
     ##TODO: criar os outros dois agentes
     agent = AgentRnd(model,configDict)
+    # agent = AgentLclzr(model, configDict)
 
     ## Ciclo de raciocínio do agente
     ##TODO: esperar um agente ir e voltar -> mandar o outro agente

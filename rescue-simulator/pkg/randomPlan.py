@@ -62,7 +62,7 @@ class RandomPlan:
         
         return True
 
-    def randomizeNextPosition(self):
+    def selectNextPosition(self, dir):
          """ Sorteia uma direcao e calcula a posicao futura do agente 
          @return: tupla contendo a acao (direcao) e o estado futuro resultante da movimentacao """
          possibilities = ["N", "S", "L", "O", "NE", "NO", "SE", "SO"]
@@ -76,7 +76,8 @@ class RandomPlan:
                     "SO" : (1, -1)}
 
          rand = randint(0, 7)
-         movDirection = possibilities[rand]
+         movDirection = dir
+         print("mov direction:" + movDirection)
          state = State(self.currentState.row + movePos[movDirection][0], self.currentState.col + movePos[movDirection][1])
 
          return movDirection, state
@@ -88,11 +89,21 @@ class RandomPlan:
         @return: tupla contendo a acao (direcao) e uma instância da classe State que representa a posição esperada após a execução
         """
 
-        ## Tenta encontrar um movimento possivel dentro do tabuleiro 
-        result = self.randomizeNextPosition()
+        ## direção inicial
+        dir = "S"
 
-        while not self.isPossibleToMove(result[1]):
-            result = self.randomizeNextPosition()
+        ## Tenta seguir em sentido sul
+        result = self.selectNextPosition(dir)
+
+        ## caso consiga
+        print(f"resultado da tentativa: {self.isPossibleToMove(result[1])}")
+        
+        # while not self.isPossibleToMove(result[1]):
+        #     dir = "L"
+        #     result = self.selectNextPosition(dir)
+            
+        #     break
+
 
         return result
 
