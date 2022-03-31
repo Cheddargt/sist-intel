@@ -4,6 +4,7 @@
 ### Executa raciocíni on-line: percebe --> [delibera] --> executa ação --> percebe --> ...
 import sys
 import os
+import time
 
 ## Importa Classes necessarias para o funcionamento
 from model import Model
@@ -66,12 +67,9 @@ class AgentRnd:
         ## Custo da solução
         self.costAll = 0
 
-        ## TODO: criar um novo plano (CustomPlan)
-        ## plano de mapeamento
         ## Cria a instancia do plano para se movimentar aleatoriamente no labirinto (sem nenhuma acao) 
-        self.plan = RandomPlan(4, 4, self.prob.goalState, initial, "goal", self.mesh)
+        self.plan = RandomPlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
 
-        ## TODO: agente de mapeamento
         ## adicionar crencas sobre o estado do ambiente ao plano - neste exemplo, o agente faz uma copia do que existe no ambiente.
         ## Em situacoes de exploracao, o agente deve aprender em tempo de execucao onde estao as paredes
         self.plan.setWalls(model.maze.walls)
@@ -132,6 +130,8 @@ class AgentRnd:
         self.executeGo(result[0])
         self.previousAction = result[0]
         self.expectedState = result[1]       
+
+        time.sleep(0.3)
 
         return 1
 

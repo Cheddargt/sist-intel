@@ -75,13 +75,8 @@ class RandomPlan:
                     "SE" : (1, 1),
                     "SO" : (1, -1)}
 
-         rand = randint(0, 7)
-         movDirection = dir
-         print("mov direction:" + movDirection)
-         state = State(self.currentState.row + movePos[movDirection][0], self.currentState.col + movePos[movDirection][1])
-
-         return movDirection, state
-
+         state = State(self.currentState.row + movePos[dir][0], self.currentState.col + movePos[dir][1])
+         return dir, state
 
     def chooseAction(self):
         """ Escolhe o proximo movimento de forma aleatoria. 
@@ -89,21 +84,18 @@ class RandomPlan:
         @return: tupla contendo a acao (direcao) e uma instância da classe State que representa a posição esperada após a execução
         """
 
-        ## direção inicial
-        dir = "S"
+        ## posição inicial pra saber o que começar fazendo
+        result = self.selectNextPosition("S")
 
-        ## Tenta seguir em sentido sul
-        result = self.selectNextPosition(dir)
-
-        ## caso consiga
-        print(f"resultado da tentativa: {self.isPossibleToMove(result[1])}")
-        
-        # while not self.isPossibleToMove(result[1]):
-        #     dir = "L"
-        #     result = self.selectNextPosition(dir)
-            
-        #     break
-
+        ## enquanto for possível se mover
+        while not self.isPossibleToMove(result[1]):
+            result = self.selectNextPosition("L")
+            ## enquanto for possível se mover
+            while not self.isPossibleToMove(result[1]):
+                result = self.selectNextPosition("N")
+                ## enquanto for possível se mover
+                while not self.isPossibleToMove(result[1]):
+                    result = self.selectNextPosition("O")
 
         return result
 
