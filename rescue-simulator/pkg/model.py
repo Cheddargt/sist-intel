@@ -25,6 +25,10 @@ class Model:
         self.agentPos = [0,0]
         ## Seta a posicao do objetivo
         self.goalPos = [0,0]
+        ## Cria uma lista vazia de posições visitadas
+        self.visitedPos = [(self.agentPos[0],self.agentPos[1])]
+        ## lista de paredes conhecidas
+        self.knownWalls = []
 
         ## Cria a view
         self.view = View(self)
@@ -70,7 +74,8 @@ class Model:
         
         ## vai para cima de uma parede
         if self.maze.walls[to_row][to_col] == 1:
-            return -1
+            ## modified by zeni
+            return -2
 
         row_dif = to_row - from_row
         col_dif = to_col - from_col
@@ -152,7 +157,13 @@ class Model:
             col = self.agentPos[1] - 1
         
         if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == 1):
-            self.setAgentPos(row, col)            
+            self.setAgentPos(row, col)          
+            ## added by zeni
+            self.visitedPos.append((row, col)) ## imutável
+        if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == -2):
+            ## added by zeni
+            ## executa a ação
+            self.knownWalls.append((row, col)) ## imutável
     
     
     def getVictimVitalSignals(self, victimId):

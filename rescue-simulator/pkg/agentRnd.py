@@ -29,6 +29,11 @@ class AgentRnd:
        
         self.model = model
 
+        self.visited = []
+
+        self.knownWalls = []
+
+
         ## Obtem o tempo que tem para executar
         self.tl = configDict["Tl"]
         print("Tempo disponivel: ", self.tl)
@@ -143,6 +148,16 @@ class AgentRnd:
 
         ## Passa a acao para o modelo
         result = self.model.go(action)
+
+        ## added by zeni
+        self.visited = self.model.visitedPos
+
+        ## added by zeni
+        self.knownWalls = self.model.knownWalls
+
+        # print(self.knownWalls)
+
+        # print(f"Ag visitou: {self.visited}")
         
         ## Se o resultado for True, significa que a acao foi completada com sucesso, e ja pode ser removida do plano
         ## if (result[1]): ## atingiu objetivo ## TACLA 20220311

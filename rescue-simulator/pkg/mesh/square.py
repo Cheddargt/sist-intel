@@ -20,6 +20,8 @@ class Square:
         self.color = False
         self.itemInside = False
         self.agent = False
+        ## added by zeni
+        self.visited = False
         self.goal = False
         self.victim = False
 
@@ -31,6 +33,11 @@ class Square:
     ## Seta se o agente está dentro
     def setAgent(self, agentIn):
         self.agent = agentIn
+
+    ## added by zeni
+    ## Seta se a posição foi visitada
+    def setVisited(self, isVisited):
+        self.visited = isVisited
 
     ## Seta se o objetivo está dentro
     def setGoal(self, goalIn):
@@ -51,6 +58,8 @@ class Square:
             pygame.draw.rect(self.screen,self.color,(self.ref[0],self.ref[1],self.side,self.side))
         elif self.victim == True:
             pygame.draw.rect(self.screen,(240,0,0),(self.ref[0],self.ref[1],self.side,self.side))
+        elif self.visited == True:
+            pygame.draw.rect(self.screen,(180,180,180),(self.ref[0],self.ref[1],self.side,self.side))
         else:
             pygame.draw.rect(self.screen,(255,255,255),(self.ref[0],self.ref[1],self.side,self.side))
         ## Desenha o contorno preto
@@ -100,6 +109,8 @@ class Square:
             self.actionable = True
         elif self.itemInside == "Agente":
             self.agent = True
+        elif self.itemInside == "Visitado":
+            self.visited = True
         elif self.itemInside == "Objetivo":
             self.goal = True
         elif self.itemInside == "Vitima":
@@ -120,3 +131,4 @@ class Square:
             self.show()
         ## Para adicionar mais elementos, coloque no aqui
 
+    

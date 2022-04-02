@@ -36,7 +36,6 @@ class RandomPlan:
         @param toState: instancia da classe State - um par (lin, col) - que aqui indica a posicao futura 
         @return: True quando é possivel ir do estado atual para o estado futuro """
 
-
         ## vai para fora do labirinto
         if (toState.col < 0 or toState.row < 0):
             return False
@@ -49,7 +48,8 @@ class RandomPlan:
         
         ## vai para cima de uma parede
         if (toState.row, toState.col) in self.walls:
-            return False
+            ## retornar outra coisa, tipo -1
+            return True
 
         # vai na diagonal? Caso sim, nao pode ter paredes acima & dir. ou acima & esq. ou abaixo & dir. ou abaixo & esq.
         delta_row = toState.row - self.currentState.row
@@ -84,8 +84,11 @@ class RandomPlan:
         @return: tupla contendo a acao (direcao) e uma instância da classe State que representa a posição esperada após a execução
         """
 
+        # if parede = adiciona a um vetor de paredes
+        # if visitado = evitar
+
         ## posição inicial pra saber o que começar fazendo
-        result = self.selectNextPosition("S")
+        result = self.selectNextPosition("SE")
 
         ## enquanto for possível se mover
         while not self.isPossibleToMove(result[1]):

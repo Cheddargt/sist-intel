@@ -52,14 +52,24 @@ def main():
     model.draw()
 
     # Cria um agente
-    agent = AgentRnd(model,configDict)
+    agent = AgentRnd(model, configDict)
 
     ## Ciclo de raciocínio do agente
     agent.deliberate()
+    # added by zeni
+    model.draw()
+    time.sleep(0.3)
     while agent.deliberate() != -1:
         model.draw()
         time.sleep(0.3) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+        print("vis ", agent.visited)    
     model.draw()    
+
+
+    # vetor de vítimas
+    # vetor de paredes
+    # vetor de posições
+    # agent = AgentSvr()
         
 if __name__ == '__main__':
     main()
