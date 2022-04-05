@@ -44,7 +44,7 @@ class RandomPlan:
             return False
         
         if len(self.walls) == 0:
-            return True
+            return False
         
         ## vai para cima de uma parede
         if (toState.row, toState.col) in self.walls:

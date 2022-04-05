@@ -162,8 +162,9 @@ class Model:
             self.visitedPos.append((row, col)) ## imutável
         if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == -2):
             ## added by zeni
-            ## executa a ação
             self.knownWalls.append((row, col)) ## imutável
+            print("walls: ", self.knownWalls)
+            ## executa a ação
     
     
     def getVictimVitalSignals(self, victimId):

@@ -22,6 +22,7 @@ class Square:
         self.agent = False
         ## added by zeni
         self.visited = False
+        self.visited_wall = False
         self.goal = False
         self.victim = False
 
@@ -60,6 +61,8 @@ class Square:
             pygame.draw.rect(self.screen,(240,0,0),(self.ref[0],self.ref[1],self.side,self.side))
         elif self.visited == True:
             pygame.draw.rect(self.screen,(180,180,180),(self.ref[0],self.ref[1],self.side,self.side))
+        elif self.visited_wall == True:
+            pygame.draw.rect(self.screen,(1, 78, 4),(self.ref[0],self.ref[1],self.side,self.side))
         else:
             pygame.draw.rect(self.screen,(255,255,255),(self.ref[0],self.ref[1],self.side,self.side))
         ## Desenha o contorno preto
@@ -111,6 +114,8 @@ class Square:
             self.agent = True
         elif self.itemInside == "Visitado":
             self.visited = True
+        elif self.itemInside == "Parede Visitada":
+            self.visited_wall = True
         elif self.itemInside == "Objetivo":
             self.goal = True
         elif self.itemInside == "Vitima":
