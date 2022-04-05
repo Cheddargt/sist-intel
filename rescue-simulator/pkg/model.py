@@ -29,6 +29,8 @@ class Model:
         self.visitedPos = [(self.agentPos[0],self.agentPos[1])]
         ## lista de paredes conhecidas
         self.knownWalls = []
+        ## lista de vítimas conhecidas
+        self.knownVictims = []
 
         ## Cria a view
         self.view = View(self)
@@ -156,14 +158,26 @@ class Model:
             row = self.agentPos[0] + 1
             col = self.agentPos[1] - 1
         
+        # -2: para fora do mapa & ir na diagonal (nem tenta ir)
+        # -1: para locais já visitados (nem tenta ir)
+        ## 0: para paredes (tenta ir, não consegue mas sabe o que tem lá)
+        ## 1: para caminho normal consegue ir, caminho normal
+        ## 2: para vítimas (tenta ir, consegue e acha uma vítima lá)
+
+        if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == 0):
+            ## added by zeni
+            ## executa a ação
+            self.knownWalls.append((row, col)) ## imutável
+
         if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == 1):
             self.setAgentPos(row, col)          
             ## added by zeni
             self.visitedPos.append((row, col)) ## imutável
-        if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == -2):
+
+        if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == 2):
             ## added by zeni
-            ## executa a ação
-            self.knownWalls.append((row, col)) ## imutável
+            self.visitedPos.append((row, col)) ## imutável
+            self.knownVictims.append((row, col)) ## imutável
     
     
     def getVictimVitalSignals(self, victimId):

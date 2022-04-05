@@ -31,7 +31,7 @@ class AgentRnd:
 
         self.visited = []
 
-        self.knownWalls = []
+        self.walls = []
 
 
         ## Obtem o tempo que tem para executar
@@ -136,7 +136,7 @@ class AgentRnd:
         self.previousAction = result[0]
         self.expectedState = result[1]       
 
-        time.sleep(0.3)
+        time.sleep(0.1)
 
         return 1
 
@@ -153,7 +153,7 @@ class AgentRnd:
         self.visited = self.model.visitedPos
 
         ## added by zeni
-        self.knownWalls = self.model.knownWalls
+        self.walls = self.model.knownWalls
 
         # print(self.knownWalls)
 

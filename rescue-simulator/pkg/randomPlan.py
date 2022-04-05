@@ -7,6 +7,8 @@ class RandomPlan:
         Define as variaveis necessárias para a utilização do random plan por um unico agente.
         """
         self.walls = []
+        self.victims = []
+        self.visited = []
         self.maxRows = maxRows
         self.maxColumns = maxColumns
         self.initialState = initialState
@@ -30,6 +32,12 @@ class RandomPlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
+    # @Zeni ALTERADO:  ao invés de true ou false, retornar:
+    # -2: para fora do mapa & ir na diagonal (nem tenta ir)
+    # -1: para locais já visitados (nem tenta ir)
+    # 0: para paredes (tenta ir, não consegue mas sabe o que tem lá)
+    # 1: para caminho normal consegue ir, caminho normal
+    # 2: para vítimas (tenta ir, consegue e sabe o que tem lá)
     def isPossibleToMove(self, toState):
         """Verifica se eh possivel ir da posicao atual para o estado (lin, col) considerando 
         a posicao das paredes do labirinto e movimentos na diagonal
@@ -40,15 +48,20 @@ class RandomPlan:
         if (toState.col < 0 or toState.row < 0):
             return False
 
+        # vai para fora do labirinto
         if (toState.col >= self.maxColumns or toState.row >= self.maxRows):
             return False
         
-        if len(self.walls) == 0:
-            return True
-        
+        ## já visitou, então nem tenta ir
+        if (toState.row, toState.col) in self.visited:
+            return False
+
         ## vai para cima de uma parede
         if (toState.row, toState.col) in self.walls:
-            ## retornar outra coisa, tipo -1
+            return False
+        
+        ## atropela uma vítima (rs)
+        if (toState.row, toState.col) in self.victims:
             return True
 
         # vai na diagonal? Caso sim, nao pode ter paredes acima & dir. ou acima & esq. ou abaixo & dir. ou abaixo & esq.
@@ -90,15 +103,18 @@ class RandomPlan:
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition("SE")
 
+        print("resultado: ", self.isPossibleToMove(result[1]))
+
+        ## CRIAR FUNÇÃO RECURSIVA DE DFS
         ## enquanto for possível se mover
         while not self.isPossibleToMove(result[1]):
             result = self.selectNextPosition("L")
-            ## enquanto for possível se mover
-            while not self.isPossibleToMove(result[1]):
-                result = self.selectNextPosition("N")
-                ## enquanto for possível se mover
-                while not self.isPossibleToMove(result[1]):
-                    result = self.selectNextPosition("O")
+        ## enquanto for possível se mover
+        while not self.isPossibleToMove(result[1]):
+            result = self.selectNextPosition("N")
+        ## enquanto for possível se mover
+        while not self.isPossibleToMove(result[1]):
+            result = self.selectNextPosition("O")
 
         return result
 
