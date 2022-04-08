@@ -7,6 +7,7 @@ class RandomPlan:
         Define as variaveis necessárias para a utilização do random plan por um unico agente.
         """
         self.walls = []
+        self.knownWalls = []
         self.maxRows = maxRows
         self.maxColumns = maxColumns
         self.initialState = initialState
@@ -49,7 +50,7 @@ class RandomPlan:
         ## vai para cima de uma parede
         if (toState.row, toState.col) in self.walls:
             ## retornar outra coisa, tipo -1
-            return True
+            return False
 
         # vai na diagonal? Caso sim, nao pode ter paredes acima & dir. ou acima & esq. ou abaixo & dir. ou abaixo & esq.
         delta_row = toState.row - self.currentState.row
@@ -90,15 +91,19 @@ class RandomPlan:
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition("SE")
 
+
         ## enquanto for possível se mover
-        while not self.isPossibleToMove(result[1]):
-            result = self.selectNextPosition("L")
+        if not self.isPossibleToMove(result[1]):
+            result = self.selectNextPosition("SE")
             ## enquanto for possível se mover
-            while not self.isPossibleToMove(result[1]):
-                result = self.selectNextPosition("N")
+            if not self.isPossibleToMove(result[1]):
+                result = self.selectNextPosition("L")
                 ## enquanto for possível se mover
-                while not self.isPossibleToMove(result[1]):
-                    result = self.selectNextPosition("O")
+                if not self.isPossibleToMove(result[1]):
+                    result = self.selectNextPosition("N")
+                    ## enquanto for possível se mover
+                    if not self.isPossibleToMove(result[1]):
+                        result = self.selectNextPosition("O")
 
         return result
 

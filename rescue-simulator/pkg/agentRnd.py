@@ -136,7 +136,7 @@ class AgentRnd:
         self.previousAction = result[0]
         self.expectedState = result[1]       
 
-        time.sleep(0.1)
+        time.sleep(0.3)
 
         return 1
 

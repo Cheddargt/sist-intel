@@ -103,6 +103,7 @@ class Model:
         if self.maze.walls[row][col] == 1:
             return -1
 
+
         self.agentPos[0] = row
         self.agentPos[1] = col
         return 1
