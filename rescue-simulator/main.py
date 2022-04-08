@@ -58,10 +58,10 @@ def main():
     agent.deliberate()
     # added by zeni
     model.draw()
-    time.sleep(0.3)
+    time.sleep(0.01)
     while agent.deliberate() != -1:
         model.draw()
-        time.sleep(0.3) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+        time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
     model.draw()    
 
 

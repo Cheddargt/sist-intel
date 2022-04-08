@@ -157,15 +157,20 @@ class Model:
             row = self.agentPos[0] + 1
             col = self.agentPos[1] - 1
         
-        if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == 1):
-            self.setAgentPos(row, col)          
-            ## added by zeni
-            self.visitedPos.append((row, col)) ## imutável
         if (self.isPossibleToMove(self.agentPos[0], self.agentPos[1], row, col) == -2):
             ## added by zeni
-            self.knownWalls.append((row, col)) ## imutável
-            print("walls: ", self.knownWalls)
+            if (row, col) not in self.knownWalls:
+                ## encontra uma parede em tempo de execução
+                self.knownWalls.append((row, col)) ## imutável
             ## executa a ação
+        ## added by zeni
+        ## limitação de não visitar uma posição já visitada não está aqui, e sim no plano
+        ## porque o agente precisa poder voltar, às vezes. Só deve ser evitado enquanto ele está
+        ## vasculhando.
+        if (row, col) not in self.visitedPos:
+            self.visitedPos.append((row, col)) ## imutável
+        self.setAgentPos(row, col)          
+    
     
     
     def getVictimVitalSignals(self, victimId):

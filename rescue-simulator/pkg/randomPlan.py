@@ -1,3 +1,4 @@
+from audioop import tostereo
 from random import randint
 from state import State
 
@@ -7,7 +8,8 @@ class RandomPlan:
         Define as variaveis necessárias para a utilização do random plan por um unico agente.
         """
         self.walls = []
-        self.knownWalls = []
+        self.visitedPos = []
+        self.chosenDir = []
         self.maxRows = maxRows
         self.maxColumns = maxColumns
         self.initialState = initialState
@@ -15,7 +17,6 @@ class RandomPlan:
         self.goalPos = goal
         self.actions = []
 
-    
     def setWalls(self, walls):
         row = 0
         col = 0
@@ -26,8 +27,7 @@ class RandomPlan:
                     self.walls.append((row, col))
                 col += 1
             row += 1
-       
-        
+    
     def updateCurrentState(self, state):
          self.currentState = state
 
@@ -39,34 +39,43 @@ class RandomPlan:
 
         ## vai para fora do labirinto
         if (toState.col < 0 or toState.row < 0):
-            return False
+            return 0
 
+        ## vai para fora do labirinto
         if (toState.col >= self.maxColumns or toState.row >= self.maxRows):
-            return False
-        
-        if len(self.walls) == 0:
-            return False
-        
-        ## vai para cima de uma parede
+            return 0
+
+        ## vai para uma posição que já foi
+        if (toState.row, toState.col) in self.visitedPos:
+            return -1
+      
+        # ## vai para cima de uma parede
+        # ## aqui é que descobre uma parede nova
         if (toState.row, toState.col) in self.walls:
-            ## retornar outra coisa, tipo -1
-            return False
+            # TODO: como que eu acesso knownWalls (linha 34 de agentRnd) aqui? Passo por parâmetro?
+            ## preciso saber pra não perder energia tentando ir para paredes que o agente já conhece
+            if ((toState.row, toState.col)) not in self.agent.knownWalls:
+                print("knownwalls: ", self.agent.knownWalls)
 
         # vai na diagonal? Caso sim, nao pode ter paredes acima & dir. ou acima & esq. ou abaixo & dir. ou abaixo & esq.
         delta_row = toState.row - self.currentState.row
         delta_col = toState.col - self.currentState.col
 
         ## o movimento eh na diagonal
-        if (delta_row !=0 and delta_col != 0):
-            if (self.currentState.row + delta_row, self.currentState.col) in self.walls and (self.currentState.row, self.currentState.col + delta_col) in self.walls:
-                return False
+        ## só pode realizar movimento na diagonal com base em knownWals, ou seja, já tendo visitado aquelas duas posições
+        ## e verificando knownWalls para verificar se já colidiu com paredes ali.
+        ##
+        ##  só seria útil no retorno (porque no vasculhamento seria inútil)
+        # if (delta_row !=0 and delta_col != 0):
+        #     if (self.currentState.row + delta_row, self.currentState.col) in self.walls and (self.currentState.row, self.currentState.col + delta_col) in self.walls:
+        #         return False
         
-        return True
+        self.visitedPos.append((toState.row, toState.col))
+        return 1
 
     def selectNextPosition(self, dir):
          """ Sorteia uma direcao e calcula a posicao futura do agente 
          @return: tupla contendo a acao (direcao) e o estado futuro resultante da movimentacao """
-         possibilities = ["N", "S", "L", "O", "NE", "NO", "SE", "SO"]
          movePos = { "N" : (-1, 0),
                     "S" : (1, 0),
                     "L" : (0, 1),
@@ -85,28 +94,53 @@ class RandomPlan:
         @return: tupla contendo a acao (direcao) e uma instância da classe State que representa a posição esperada após a execução
         """
 
+        possibilities = ["O", "S", "L", "N"]  
+        backwards_possibilities = { "O" : "L",
+                                    "S" : "N",
+                                    "L" : "O",
+                                    "N" : "S"}
+        # ["N", "S", "L", "O", "NE", "NO", "SE", "SO"]
+
         # if parede = adiciona a um vetor de paredes
         # if visitado = evitar
 
         ## posição inicial pra saber o que começar fazendo
-        result = self.selectNextPosition("SE")
+        result = self.selectNextPosition(possibilities[0])
+        if self.isPossibleToMove(result[1]) == 1:
+            self.chosenDir.append(possibilities[0])
+            return result
 
+        if self.isPossibleToMove(result[1]) != 1:
+            for pos in possibilities:
+                result = self.selectNextPosition(pos)
+                if self.isPossibleToMove(result[1]) == 1:
+                    self.chosenDir.append(pos)
+                    return result
 
-        ## enquanto for possível se mover
-        if not self.isPossibleToMove(result[1]):
-            result = self.selectNextPosition("SE")
-            ## enquanto for possível se mover
-            if not self.isPossibleToMove(result[1]):
-                result = self.selectNextPosition("L")
-                ## enquanto for possível se mover
-                if not self.isPossibleToMove(result[1]):
-                    result = self.selectNextPosition("N")
-                    ## enquanto for possível se mover
-                    if not self.isPossibleToMove(result[1]):
-                        result = self.selectNextPosition("O")
+        ## se não puder ir em nenhuma direção: provavelmente travou
+        ## andar para trás
+        for backwards_dir in reversed(self.chosenDir):
+            result = self.selectNextPosition(backwards_possibilities[backwards_dir])
+            if self.isPossibleToMove(result[1]) == -1:
+                self.chosenDir.remove(backwards_dir)
+                return result
+        ## gastar uma energia
+        ## tentar de novo
 
-        return result
+        # ## enquanto for possível se mover
+        # if not self.isPossibleToMove(result[1]):
+        #     result = self.selectNextPosition("SE")
+        #     ## enquanto for possível se mover
+        #     if not self.isPossibleToMove(result[1]):
+        #         result = self.selectNextPosition("L")
+        #         ## enquanto for possível se mover
+        #         if not self.isPossibleToMove(result[1]):
+        #             result = self.selectNextPosition("N")
+        #             ## enquanto for possível se mover
+        #             if not self.isPossibleToMove(result[1]):
+        #                 result = self.selectNextPosition("O")
 
+        # return result
 
     def do(self):
         """

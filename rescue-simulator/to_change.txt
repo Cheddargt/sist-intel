@@ -1,0 +1,10 @@
+coisas que fiz:
+    em model, o agente não verifica mais a posição visitada pra saber se vai ou não,
+apenas em randomPlan
+
+problemas:
+    apenas o plano sabe das paredes, porque ele não manda o agente para cima da 
+parede (ou seja, não gasta energia extra)
+    mudar para: o plano não sabe das paredes, sempre tenta as mesmas direções, caso
+o agente colida com uma parede, ele perde energia, adiciona a parede às paredes
+conhecidas e (provavelmente) passa ela para o plano, pra não tentar ir nela de novo.

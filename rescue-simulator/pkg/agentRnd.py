@@ -88,6 +88,8 @@ class AgentRnd:
 
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
+        print(f"libplan: ", self.libPlan)
+
         ## Verifica se há algum plano a ser executado
         if len(self.libPlan) == 0:
             return -1   ## fim da execucao do agente, acabaram os planos
@@ -114,11 +116,11 @@ class AgentRnd:
         self.tl -= self.prob.getActionCost(self.previousAction)
         print("Tempo disponivel: ", self.tl)
 
-        ## Verifica se atingiu o estado objetivo
-        ## Poderia ser outra condição, como atingiu o custo máximo de operação
-        if self.prob.goalTest(self.currentState):
-            print("!!! Objetivo atingido !!!")
-            del self.libPlan[0]  ## retira plano da biblioteca
+        # ## Verifica se atingiu o estado objetivo
+        # ## Poderia ser outra condição, como atingiu o custo máximo de operação
+        # if self.prob.goalTest(self.currentState):
+        #     print("!!! Objetivo atingido !!!")
+        #     del self.libPlan[0]  ## retira plano da biblioteca
         
         ## Verifica se tem vitima na posicao atual    
         victimId = self.victimPresenceSensor()
@@ -136,7 +138,7 @@ class AgentRnd:
         self.previousAction = result[0]
         self.expectedState = result[1]       
 
-        time.sleep(0.3)
+        time.sleep(0.01)
 
         return 1
 
@@ -153,9 +155,10 @@ class AgentRnd:
         self.visited = self.model.visitedPos
 
         ## added by zeni
+        ## não tá dando pra passar pra cá?
         self.knownWalls = self.model.knownWalls
-
-        print("knownwalls: ", self.model.knownWalls)
+        if len(self.knownWalls) > 0:
+            print("walls: ", self.knownWalls)
 
         # print(f"Ag visitou: {self.visited}")
         
