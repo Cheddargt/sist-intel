@@ -8,6 +8,7 @@ class RandomPlan:
         Define as variaveis necessárias para a utilização do random plan por um unico agente.
         """
         self.walls = []
+        self.knownWalls = []
         self.visitedPos = []
         self.chosenDir = []
         self.maxRows = maxRows
@@ -27,6 +28,11 @@ class RandomPlan:
                     self.walls.append((row, col))
                 col += 1
             row += 1
+
+    def setKnownWalls(self, kn_walls):
+        # deveria: fazer append
+        # estou: substituindo tudo
+        self.knownWalls = kn_walls
     
     def updateCurrentState(self, state):
          self.currentState = state
@@ -54,8 +60,9 @@ class RandomPlan:
         if (toState.row, toState.col) in self.walls:
             # TODO: como que eu acesso knownWalls (linha 34 de agentRnd) aqui? Passo por parâmetro?
             ## preciso saber pra não perder energia tentando ir para paredes que o agente já conhece
-            if ((toState.row, toState.col)) not in self.agent.knownWalls:
-                print("knownwalls: ", self.agent.knownWalls)
+            # R: uma função chamada setKnownWalls chamada na linha 180 de agentRnd
+            if ((toState.row, toState.col)) in self.knownWalls:
+                return 0
 
         # vai na diagonal? Caso sim, nao pode ter paredes acima & dir. ou acima & esq. ou abaixo & dir. ou abaixo & esq.
         delta_row = toState.row - self.currentState.row

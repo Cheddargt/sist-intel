@@ -159,6 +159,8 @@ class AgentRnd:
         self.knownWalls = self.model.knownWalls
         if len(self.knownWalls) > 0:
             print("walls: ", self.knownWalls)
+             ## adicionar crencas sobre o estado do ambiente ao plano - apenas paredes conhecidas
+            self.plan.setKnownWalls(self.knownWalls)
 
         # print(f"Ag visitou: {self.visited}")
         

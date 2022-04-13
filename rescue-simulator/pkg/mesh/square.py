@@ -25,6 +25,7 @@ class Square:
         self.visited_wall = False
         self.goal = False
         self.victim = False
+        self.visited_victim = False
 
         ## Variaveis usadas para definir se um objeto é acionavel
         self.actionable = False
@@ -39,6 +40,11 @@ class Square:
     ## Seta se a posição foi visitada
     def setVisited(self, isVisited):
         self.visited = isVisited
+
+    ## added by zeni
+    ## Seta se vítima foi detectada
+    def setVisitedVict(self, isVisited):
+        self.visited_victim = isVisited
 
     ## Seta se o objetivo está dentro
     def setGoal(self, goalIn):
@@ -56,7 +62,12 @@ class Square:
         elif self.goal == True:
             pygame.draw.rect(self.screen,(240,230,140),(self.ref[0],self.ref[1],self.side,self.side))
         elif self.color != False:
-            pygame.draw.rect(self.screen,self.color,(self.ref[0],self.ref[1],self.side,self.side))
+            pygame.draw.rect(self.screen,self.color,(self.ref[0],self.ref[1],self.side,self.side)),
+        ## alterado by zeni
+        # verificar se não há vitima visitada no bloco deve possuir prioridade maior em relação a verificar
+        # se não há vitima no bloco
+        elif self.visited_victim == True:
+            pygame.draw.rect(self.screen,(200,0,255),(self.ref[0],self.ref[1],self.side,self.side))
         elif self.victim == True:
             pygame.draw.rect(self.screen,(240,0,0),(self.ref[0],self.ref[1],self.side,self.side))
         elif self.visited == True:
@@ -120,6 +131,8 @@ class Square:
             self.goal = True
         elif self.itemInside == "Vitima":
             self.victim = True
+        elif self.itemInside == "Vitima Visitada":
+            self.visited_victim = True
         else:
             self.color = False
     

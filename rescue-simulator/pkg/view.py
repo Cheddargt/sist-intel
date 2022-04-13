@@ -102,8 +102,15 @@ class View:
     def draw(self):
 
         ## added by zeni
+        # alterar cor de posições visitadas
         for i in self.model.visitedPos:
             self.board.listPlaces[i[0]][i[1]].setVisited(True)            
+            self.board.listPlaces[i[0]][i[1]].show()            
+
+        ## added by zeni
+        # alterar cor de vítimas detectadas
+        for i in self.model.visitedVict:
+            self.board.listPlaces[i[0]][i[1]].setVisitedVict(True)            
             self.board.listPlaces[i[0]][i[1]].show()            
 
         ## Limpa as mensagens do robo

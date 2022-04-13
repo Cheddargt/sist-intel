@@ -27,6 +27,8 @@ class Model:
         self.goalPos = [0,0]
         ## Cria uma lista vazia de posições visitadas
         self.visitedPos = [(self.agentPos[0],self.agentPos[1])]
+        ## Cria uma lista vazia de vitimas visitadas
+        self.visitedVict = []
         ## lista de paredes conhecidas
         self.knownWalls = []
 
@@ -200,6 +202,11 @@ class Model:
         row = self.agentPos[0]
         col = self.agentPos[1]
         victimId = self.maze.victims[row][col]
+        ## added by zeni
+        ## adiciona a vitima a uma lista de vitimas detectadas (não ainda)
+        if victimId >= 1:
+            if (row, col) not in self.visitedVict:
+                self.visitedVict.append((row, col)) ## imutável
         return victimId
 
     ## Metodo que executa uma acao (de não movimento)
