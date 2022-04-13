@@ -46,6 +46,11 @@ class Square:
     def setVisitedVict(self, isVisited):
         self.visited_victim = isVisited
 
+    ## added by zeni
+    ## Seta se a parede foi detectada
+    def setVisitedWall(self, isVisited):
+        self.visited_wall = isVisited
+
     ## Seta se o objetivo está dentro
     def setGoal(self, goalIn):
         self.goal = goalIn
@@ -53,7 +58,9 @@ class Square:
     ## Desenha o quadrado
     def show(self):
         ## A depender do que tem dentro, muda a cor
-        if self.color != False:
+        if self.visited_wall == True:
+            pygame.draw.rect(self.screen,(1, 78, 4),(self.ref[0],self.ref[1],self.side,self.side))
+        elif self.color != False:
             pygame.draw.rect(self.screen,self.color,(self.ref[0],self.ref[1],self.side,self.side))
         elif self.agent == True:
             pygame.draw.rect(self.screen,(0,255,0),(self.ref[0],self.ref[1],self.side,self.side))
@@ -72,8 +79,7 @@ class Square:
             pygame.draw.rect(self.screen,(240,0,0),(self.ref[0],self.ref[1],self.side,self.side))
         elif self.visited == True:
             pygame.draw.rect(self.screen,(180,180,180),(self.ref[0],self.ref[1],self.side,self.side))
-        elif self.visited_wall == True:
-            pygame.draw.rect(self.screen,(1, 78, 4),(self.ref[0],self.ref[1],self.side,self.side))
+        
         else:
             pygame.draw.rect(self.screen,(255,255,255),(self.ref[0],self.ref[1],self.side,self.side))
         ## Desenha o contorno preto
