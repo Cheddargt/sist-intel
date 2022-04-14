@@ -133,7 +133,8 @@ class AgentRescue:
         if victimId > 0:
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
-            self.foundVictims.append(self.currentState)
+            if (self.currentState.row, self.currentState.col) not in self.foundVictims:
+                self.foundVictims.append((self.currentState.row, self.currentState.col))
 
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>

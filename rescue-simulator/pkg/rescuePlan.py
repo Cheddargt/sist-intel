@@ -62,6 +62,10 @@ class RescuePlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
+    def createRescuePlan(self):
+        #TODO: create rescue plan
+        print()
+
     def isPossibleToMove(self, toState):
         """Verifica se eh possivel ir da posicao atual para o estado (lin, col) considerando 
         a posicao das paredes do labirinto e movimentos na diagonal
@@ -120,6 +124,8 @@ class RescuePlan:
          state = State(self.currentState.row + movePos[dir][0], self.currentState.col + movePos[dir][1])
          return dir, state
 
+    
+
     def chooseAction(self):
         """ Escolhe o proximo movimento de forma aleatoria. 
         Eh a acao que vai ser executada pelo agente. 
@@ -144,10 +150,10 @@ class RescuePlan:
                 (0, 1) : "L", 
                 (0, -1) : "O"}
 
-        if (self.remainingTime < self.calculateWayBack()[0]+2):
+        if (self.remainingTime <= self.calculateWayBack()[0]+2):
             # if (self.currentState == self.initialState):
                 # return [(-1, -1), self.currentState]
-            print("hora de voltar -- acabou a bateria!")
+            print("hora de voltar -- sem tempo pra escanear!")
             wayBack = self.calculateWayBack()[1]
             next_dir = (wayBack[0][0] - self.currentState.row, wayBack[0][1] - self.currentState.col)
             nextPos = backwardsMovePos[next_dir]

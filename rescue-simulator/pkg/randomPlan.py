@@ -175,7 +175,7 @@ class RandomPlan:
         if (self.remainingTime < self.calculateWayBack()[0]+2):
             # if (self.currentState == self.initialState):
                 # return [(-1, -1), self.currentState]
-            print("hora de voltar -- acabou a bateria!")
+            print("hora de voltar -- sem tempo pra escanear!")
             wayBack = self.calculateWayBack()[1]
             next_dir = (wayBack[0][0] - self.currentState.row, wayBack[0][1] - self.currentState.col)
             nextPos = backwardsMovePos[next_dir]
