@@ -165,12 +165,14 @@ class Model:
                 ## encontra uma parede em tempo de execução
                 self.knownWalls.append((row, col)) ## imutável
             ## executa a ação
+        
         ## added by zeni
         ## limitação de não visitar uma posição já visitada não está aqui, e sim no plano
         ## porque o agente precisa poder voltar, às vezes. Só deve ser evitado enquanto ele está
         ## vasculhando.
-        if (row, col) not in self.visitedPos:
-            self.visitedPos.append((row, col)) ## imutável
+        if (row, col) not in self.knownWalls:    
+            if (row, col) not in self.visitedPos:
+                self.visitedPos.append((row, col)) ## imutável
         self.setAgentPos(row, col)          
     
     

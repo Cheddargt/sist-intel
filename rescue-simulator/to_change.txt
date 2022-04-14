@@ -8,3 +8,7 @@ parede (ou seja, não gasta energia extra)
     mudar para: o plano não sabe das paredes, sempre tenta as mesmas direções, caso
 o agente colida com uma parede, ele perde energia, adiciona a parede às paredes
 conhecidas e (provavelmente) passa ela para o plano, pra não tentar ir nela de novo.
+
+problema: calculateWayBack está matando o programa
+
+problema: descobrir como fazer pro agente calcular toda a rota offline e executar de uma vez só

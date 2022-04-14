@@ -31,8 +31,8 @@ class AgentRescue:
         self.model = model
 
         ## Obtem o tempo que tem para executar
-        self.tv = configDict["Tv"]
-        print("Tempo disponivel: ", self.tv)
+        self.ts = configDict["Ts"]
+        print("Tempo disponivel: ", self.ts)
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
         self.mesh = self.model.mesh
@@ -73,6 +73,9 @@ class AgentRescue:
         # knowledge do agente vasc
         self.plan.setKnowledge(self.agentKnowledge)
 
+        # passar o tempo remanescente para o plano decidir o que fazer
+        self.plan.setRemainingTime(self.ts)
+
         ## adicionar crencas sobre o estado do ambiente ao plano - neste exemplo, o agente faz uma copia do que existe no ambiente.
         ## Em situacoes de exploracao, o agente deve aprender em tempo de execucao onde estao as paredes
         self.plan.setWalls(model.maze.walls)
@@ -111,14 +114,15 @@ class AgentRescue:
         print ("Custo até o momento (com a ação escolhida):", self.costAll) 
 
         ## consome o tempo gasto
-        self.tv -= self.prob.getActionCost(self.previousAction)
-        print("Tempo disponivel: ", self.tv)
+        self.ts -= self.prob.getActionCost(self.previousAction)
+        print("Tempo disponivel: ", self.ts)
 
-        # passar o tempo remanescente para o plano decidir o que fazer
-        self.plan.setRemainingTime(self.tv)
-
-        if self.tv == 0:
+        if self.ts == 0 and self.currentState.row == 0 and self.currentState.col == 0:
             print("!!! Voltou pra base !!!")
+            del self.libPlan[0]  ## retira plano da biblioteca
+            return -1
+        elif self.ts == 0 and self.currentState.row != 0 and self.currentState.col != 0:
+            print("!!! Ag não conseguiu voltar pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1
 

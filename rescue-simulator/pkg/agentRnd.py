@@ -126,8 +126,12 @@ class AgentRnd:
         # passar o tempo remanescente para o plano decidir o que fazer
         self.plan.setRemainingTime(self.tv)
 
-        if self.tv == 0:
+        if self.tv == 0 and self.currentState.row == 0 and self.currentState.col == 0:
             print("!!! Voltou pra base !!!")
+            del self.libPlan[0]  ## retira plano da biblioteca
+            return -1
+        elif self.tv == 0 and self.currentState.row != 0 and self.currentState.col != 0:
+            print("!!! Ag não conseguiu voltar pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1
 
@@ -178,6 +182,8 @@ class AgentRnd:
             print("walls: ", self.knownWalls)
              ## adicionar crencas sobre o estado do ambiente ao plano - apenas paredes conhecidas
             self.plan.setKnownWalls(self.knownWalls)
+
+        self.plan.setVisitedPos(self.visited)
 
         # print(f"Ag visitou: {self.visited}")
         

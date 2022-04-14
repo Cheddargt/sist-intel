@@ -43,13 +43,16 @@ class RandomPlan:
 
     def setRemainingTime(self, time):
         self.remainingTime = time
+
+    def setVisitedPos(self, visited):
+        self.visitedPos = visited
     
     def updateCurrentState(self, state):
          self.currentState = state
 
     ## isso aqui não pode ser em agente, tem que ser no plano de retorno
     def calculateWayBack(self):
-        available_path = self.visitedPos
+        available_path = self.visitedPos.copy()
         wayBackCost = 0
 
         best_path = []
@@ -59,8 +62,9 @@ class RandomPlan:
         ## voltar pra base
         goal = (self.initialState.row, self.initialState.col)
 
-        current_best_choice = [()]
-
+        if (self.currentState.col == 21) and (self.currentState.row == 23):
+            print("teste")
+            
         if (self.currentState.row, self.currentState.col) != (0,0):
 
             while goal not in best_path:
@@ -78,14 +82,16 @@ class RandomPlan:
                             # dir ou esq
                             validPos = True
                       
-                        if validPos and euc_dist(pos, goal) < smallest_dist:
+                        if validPos and euc_dist(pos, goal) <= smallest_dist:
                             smallest_dist = euc_dist(pos, goal)
                             best_choice = pos
 
                 # pos_aux = próximo "passo" do agente
-                pos_aux = best_choice
-                best_path.append(best_choice) 
-                wayBackCost+=1
+                if best_choice != ():
+                    pos_aux = best_choice
+                    best_path.append(best_choice) 
+                    wayBackCost+=1
+                    available_path.remove(best_choice)
                         
         return [wayBackCost, best_path]
 
@@ -129,7 +135,6 @@ class RandomPlan:
         #     if (self.currentState.row + delta_row, self.currentState.col) in self.walls and (self.currentState.row, self.currentState.col + delta_col) in self.walls:
         #         return False
         
-        self.visitedPos.append((toState.row, toState.col))
         return 1
 
     def selectNextPosition(self, dir):
@@ -171,15 +176,16 @@ class RandomPlan:
                 (0, 1) : "L", 
                 (0, -1) : "O"}
 
-        if (self.remainingTime < self.calculateWayBack()[0]+2):
-            # if (self.currentState == self.initialState):
-                # return [(-1, -1), self.currentState]
-            print("hora de voltar -- sem tempo pra escanear!")
-            wayBack = self.calculateWayBack()[1]
-            next_dir = (wayBack[0][0] - self.currentState.row, wayBack[0][1] - self.currentState.col)
-            nextPos = backwardsMovePos[next_dir]
-            state = State(self.currentState.row + wayBack[0][0], self.currentState.col + wayBack[0][1])
-            return [nextPos, state]
+        # TODO: consertar erro que tá fazendo o arquivo morrer
+        # if (self.remainingTime < self.calculateWayBack()[0]+2):
+        #     # if (self.currentState == self.initialState):
+        #         # return [(-1, -1), self.currentState]
+        #     print("hora de voltar -- sem tempo pra escanear!")
+        #     wayBack = self.calculateWayBack()[1]
+        #     next_dir = (wayBack[0][0] - self.currentState.row, wayBack[0][1] - self.currentState.col)
+        #     nextPos = backwardsMovePos[next_dir]
+        #     state = State(self.currentState.row + wayBack[0][0], self.currentState.col + wayBack[0][1])
+        #     return [nextPos, state]
                 
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition(possibilities[0])
