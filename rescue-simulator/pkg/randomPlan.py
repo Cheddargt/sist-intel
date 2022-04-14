@@ -1,6 +1,13 @@
+from asyncio.windows_events import INFINITE
 from audioop import tostereo
 from random import randint
+import numpy as np
+
+from matplotlib.style import available
 from state import State
+
+def euc_dist (a, b):
+    return (np.sqrt((b[1]-a[1])*(b[1]-a[1]) + ((b[0]-a[0])*(b[0]-a[0]))))
 
 class RandomPlan:
     def __init__(self, maxRows, maxColumns, goal, initialState, name = "none", mesh = "square"):
@@ -9,7 +16,7 @@ class RandomPlan:
         """
         self.walls = []
         self.knownWalls = []
-        self.visitedPos = []
+        self.visitedPos = [(initialState.row, initialState.col)]
         self.chosenDir = []
         self.maxRows = maxRows
         self.maxColumns = maxColumns
@@ -17,6 +24,7 @@ class RandomPlan:
         self.currentState = initialState
         self.goalPos = goal
         self.actions = []
+        self.best_choice_test = []
 
     def setWalls(self, walls):
         row = 0
@@ -37,6 +45,53 @@ class RandomPlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
+    ## isso aqui não pode ser em agente, tem que ser no plano de retorno
+    def calculateWayBack(self):
+        available_path = self.visitedPos
+
+        best_path = []
+
+        pos_aux = (self.currentState.row, self.currentState.col)
+
+        print(pos_aux[0])
+        ## voltar pra base
+        goal = (self.initialState.row, self.initialState.col)
+
+        current_best_choice = [()]
+
+        if (self.currentState.row, self.currentState.col) != (0,0):
+
+            while goal not in best_path:
+                best_choice = [()]
+                smallest_dist = INFINITE
+
+                for pos in reversed(available_path):
+                    # inicializar
+                    if pos != pos_aux:
+                        best_choice = pos
+
+                        validPos = False
+
+                        if (abs(pos_aux[0] - pos[0]) == 1 and pos_aux[1] - pos[1] == 0):
+                            # cima ou baixo
+                            validPos = True
+                        elif (pos_aux[0] - pos[0] == 0 and abs(pos_aux[1] - pos[1] == 1)):
+                            # dir ou esq
+                            validPos = True
+                      
+                        if validPos and euc_dist(pos, goal) < smallest_dist:
+                            smallest_dist = euc_dist(pos, goal)
+                            self.best_choice_test = best_choice
+                            pos_aux = best_choice
+
+                best_path.append(self.best_choice_test) 
+                        
+            print(best_path)
+        return
+
+            
+
+    
     def isPossibleToMove(self, toState):
         """Verifica se eh possivel ir da posicao atual para o estado (lin, col) considerando 
         a posicao das paredes do labirinto e movimentos na diagonal
@@ -111,6 +166,8 @@ class RandomPlan:
         # if parede = adiciona a um vetor de paredes
         # if visitado = evitar
 
+        self.calculateWayBack()
+
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition(possibilities[0])
         if self.isPossibleToMove(result[1]) == 1:
@@ -155,7 +212,6 @@ class RandomPlan:
 
         Retorna o movimento e o estado do plano (False = nao concluido, True = Concluido)
         """
-        
         nextMove = self.move()
         return (nextMove[1], self.goalPos == State(nextMove[0][0], nextMove[0][1]))   
     

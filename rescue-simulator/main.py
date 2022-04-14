@@ -62,7 +62,12 @@ def main():
     while agent.deliberate() != -1:
         model.draw()
         time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
-    model.draw()    
+
+    agentVascKnowledge = agent.getKnowledge()
+
+    print(agentVascKnowledge)
+
+    model.draw()
 
 
     # vetor de vítimas

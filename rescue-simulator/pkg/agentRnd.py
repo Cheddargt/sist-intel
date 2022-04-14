@@ -33,10 +33,15 @@ class AgentRnd:
 
         self.knownWalls = []
 
+        self.foundVictims = []
+
+        self.agentKnowledge = {}
+
+
 
         ## Obtem o tempo que tem para executar
-        self.tl = configDict["Tl"]
-        print("Tempo disponivel: ", self.tl)
+        self.tv = configDict["Tv"]
+        print("Tempo disponivel: ", self.tv)
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
         self.mesh = self.model.mesh
@@ -86,6 +91,10 @@ class AgentRnd:
         self.previousAction = "nop"    ## nenhuma (no operation)
         self.expectedState = self.currentState
 
+    def getKnowledge(self):
+        self.agentKnowledge = {'visited': self.visited, 'knownWalls': self.knownWalls, 'foundVictims': self.foundVictims}
+        return self.agentKnowledge
+
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
         print(f"libplan: ", self.libPlan)
@@ -113,8 +122,13 @@ class AgentRnd:
         print ("Custo até o momento (com a ação escolhida):", self.costAll) 
 
         ## consome o tempo gasto
-        self.tl -= self.prob.getActionCost(self.previousAction)
-        print("Tempo disponivel: ", self.tl)
+        self.tv -= self.prob.getActionCost(self.previousAction)
+        print("Tempo disponivel: ", self.tv)
+
+        if self.tv == 25:
+            print("!!! Voltando pra base !!!")
+            del self.libPlan[0]  ## retira plano da biblioteca
+            return -1
 
         # ## Verifica se atingiu o estado objetivo
         # ## Poderia ser outra condição, como atingiu o custo máximo de operação
@@ -127,6 +141,7 @@ class AgentRnd:
         if victimId > 0:
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
+            self.foundVictims.append(self.currentState)
 
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>
