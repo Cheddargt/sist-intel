@@ -37,8 +37,6 @@ class AgentRnd:
 
         self.agentKnowledge = {}
 
-
-
         ## Obtem o tempo que tem para executar
         self.tv = configDict["Tv"]
         print("Tempo disponivel: ", self.tv)
@@ -125,8 +123,11 @@ class AgentRnd:
         self.tv -= self.prob.getActionCost(self.previousAction)
         print("Tempo disponivel: ", self.tv)
 
-        if self.tv == 25:
-            print("!!! Voltando pra base !!!")
+        # passar o tempo remanescente para o plano decidir o que fazer
+        self.plan.setRemainingTime(self.tv)
+
+        if self.tv == 0:
+            print("!!! Voltou pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1
 

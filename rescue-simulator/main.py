@@ -6,6 +6,7 @@ import time
 sys.path.append(os.path.join("pkg"))
 from model import Model
 from agentRnd import AgentRnd
+from agentRescue import AgentRescue
 
 
 ## Metodo utilizado para permitir que o usuario construa o labirindo clicando em cima
@@ -51,21 +52,28 @@ def main():
     model.setGoalPos(model.maze.board.posGoal[0],model.maze.board.posGoal[1])  
     model.draw()
 
-    # Cria um agente
-    agent = AgentRnd(model, configDict)
+    # Cria um agente vasculhador
+    agent_vsc = AgentRnd(model, configDict)
 
     ## Ciclo de raciocínio do agente
-    agent.deliberate()
+    agent_vsc.deliberate()
     # added by zeni
     model.draw()
     time.sleep(0.01)
-    while agent.deliberate() != -1:
+    while agent_vsc.deliberate() != -1:
         model.draw()
         time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
 
-    agentVascKnowledge = agent.getKnowledge()
+    model.draw()
 
-    print(agentVascKnowledge)
+    agentVascKnowledge = agent_vsc.getKnowledge()
+    # Cria um agente salvador
+    agent_rsc = AgentRescue(model, configDict, agentVascKnowledge)
+    print('agente salvador criado')
+
+    while agent_rsc.deliberate() != -1:
+        model.draw()
+        time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
 
     model.draw()
 

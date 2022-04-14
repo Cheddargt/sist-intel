@@ -13,32 +13,29 @@ from state import State
 from random import randint
 
 ## Importa o algoritmo para o plano
-from randomPlan import RandomPlan
+from rescuePlan import RescuePlan
 
 ##Importa o Planner
 sys.path.append(os.path.join("pkg", "planner"))
 from planner import Planner
 
 ## Classe que define o Agente
-## receber vitimas, posicoes e parede
-class AgentRnd:
-    def __init__(self, model, configDict):
+class AgentRescue:
+    def __init__(self, model, configDict, agentVascKnowledge):
         """ 
         Construtor do agente random
         @param model referencia o ambiente onde o agente estah situado
         """
-       
+        self.agentKnowledge = agentVascKnowledge
+
         self.model = model
 
-        self.visited = []
-
         ## Obtem o tempo que tem para executar
-        self.tl = configDict["Tl"]
-        print("Tempo disponivel: ", self.tl)
+        self.tv = configDict["Tv"]
+        print("Tempo disponivel: ", self.tv)
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
         self.mesh = self.model.mesh
-
 
         ## Cria a instância do problema na mente do agente (sao suas crencas)
         self.prob = Problem()
@@ -71,7 +68,10 @@ class AgentRnd:
         self.costAll = 0
 
         ## Cria a instancia do plano para se movimentar aleatoriamente no labirinto (sem nenhuma acao) 
-        self.plan = RandomPlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
+        self.plan = RescuePlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
+
+        # knowledge do agente vasc
+        self.plan.setKnowledge(self.agentKnowledge)
 
         ## adicionar crencas sobre o estado do ambiente ao plano - neste exemplo, o agente faz uma copia do que existe no ambiente.
         ## Em situacoes de exploracao, o agente deve aprender em tempo de execucao onde estao as paredes
@@ -86,6 +86,8 @@ class AgentRnd:
 
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
+        print(f"libplan: ", self.libPlan)
+
         ## Verifica se há algum plano a ser executado
         if len(self.libPlan) == 0:
             return -1   ## fim da execucao do agente, acabaram os planos
@@ -109,20 +111,29 @@ class AgentRnd:
         print ("Custo até o momento (com a ação escolhida):", self.costAll) 
 
         ## consome o tempo gasto
-        self.tl -= self.prob.getActionCost(self.previousAction)
-        print("Tempo disponivel: ", self.tl)
+        self.tv -= self.prob.getActionCost(self.previousAction)
+        print("Tempo disponivel: ", self.tv)
 
-        ## Verifica se atingiu o estado objetivo
-        ## Poderia ser outra condição, como atingiu o custo máximo de operação
-        if self.prob.goalTest(self.currentState):
-            print("!!! Objetivo atingido !!!")
+        # passar o tempo remanescente para o plano decidir o que fazer
+        self.plan.setRemainingTime(self.tv)
+
+        if self.tv == 0:
+            print("!!! Voltou pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
+            return -1
+
+        # ## Verifica se atingiu o estado objetivo
+        # ## Poderia ser outra condição, como atingiu o custo máximo de operação
+        # if self.prob.goalTest(self.currentState):
+        #     print("!!! Objetivo atingido !!!")
+        #     del self.libPlan[0]  ## retira plano da biblioteca
         
         ## Verifica se tem vitima na posicao atual    
         victimId = self.victimPresenceSensor()
         if victimId > 0:
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
+            self.foundVictims.append(self.currentState)
 
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>
@@ -147,9 +158,16 @@ class AgentRnd:
         ## Passa a acao para o modelo
         result = self.model.go(action)
 
-
         ## added by zeni
         self.visited = self.model.visitedPos
+
+        ## added by zeni
+        ## não tá dando pra passar pra cá?
+        self.knownWalls = self.model.knownWalls
+        if len(self.knownWalls) > 0:
+            print("walls: ", self.knownWalls)
+             ## adicionar crencas sobre o estado do ambiente ao plano - apenas paredes conhecidas
+            self.plan.setKnownWalls(self.knownWalls)
 
         # print(f"Ag visitou: {self.visited}")
         

@@ -9,7 +9,7 @@ from state import State
 def euc_dist (a, b):
     return (np.sqrt((b[1]-a[1])*(b[1]-a[1]) + ((b[0]-a[0])*(b[0]-a[0]))))
 
-class RandomPlan:
+class RescuePlan:
     def __init__(self, maxRows, maxColumns, goal, initialState, name = "none", mesh = "square"):
         """
         Define as variaveis necessárias para a utilização do random plan por um unico agente.
@@ -25,6 +25,15 @@ class RandomPlan:
         self.goalPos = goal
         self.actions = []
         self.remainingTime = INFINITE
+
+        #availablePath
+        self.availablePath = []
+
+        #knownWalls
+        self.knownWalls = []
+
+        #foundVictims
+        self.foundVictims = []
 
     def setWalls(self, walls):
         row = 0
@@ -44,51 +53,14 @@ class RandomPlan:
 
     def setRemainingTime(self, time):
         self.remainingTime = time
+
+    def setKnowledge(self, knowledge):
+        self.availablePath = knowledge["visited"]
+        self.knownWalls = knowledge["knownWalls"]
+        self.foundVictims = knowledge["foundVictims"]
     
     def updateCurrentState(self, state):
          self.currentState = state
-
-    ## isso aqui não pode ser em agente, tem que ser no plano de retorno
-    def calculateWayBack(self):
-        available_path = self.visitedPos
-        wayBackCost = 0
-
-        best_path = []
-
-        pos_aux = (self.currentState.row, self.currentState.col)
-
-        ## voltar pra base
-        goal = (self.initialState.row, self.initialState.col)
-
-        current_best_choice = [()]
-
-        if (self.currentState.row, self.currentState.col) != (0,0):
-
-            while goal not in best_path:
-                best_choice = ()
-                smallest_dist = INFINITE
-
-                for pos in reversed(available_path):
-                    # inicializar
-                    if pos != pos_aux:
-
-                        validPos = False
-
-                        # cima baixo or direita ou esq
-                        if (abs(pos_aux[0] - pos[0]) == 1 and pos_aux[1] - pos[1] == 0) or (pos_aux[0] - pos[0] == 0 and abs(pos_aux[1] - pos[1] == 1)):
-                            # dir ou esq
-                            validPos = True
-                      
-                        if validPos and euc_dist(pos, goal) < smallest_dist:
-                            smallest_dist = euc_dist(pos, goal)
-                            best_choice = pos
-
-                # pos_aux = próximo "passo" do agente
-                pos_aux = best_choice
-                best_path.append(best_choice) 
-                wayBackCost+=1
-                        
-        return [wayBackCost, best_path]
 
     def isPossibleToMove(self, toState):
         """Verifica se eh possivel ir da posicao atual para o estado (lin, col) considerando 
