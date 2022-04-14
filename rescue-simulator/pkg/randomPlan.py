@@ -1,4 +1,3 @@
-from asyncio.windows_events import INFINITE
 from audioop import tostereo
 from random import randint
 import numpy as np
@@ -24,7 +23,7 @@ class RandomPlan:
         self.currentState = initialState
         self.goalPos = goal
         self.actions = []
-        self.remainingTime = INFINITE
+        self.remainingTime = 999999999
 
     def setWalls(self, walls):
         row = 0
@@ -66,7 +65,7 @@ class RandomPlan:
 
             while goal not in best_path:
                 best_choice = ()
-                smallest_dist = INFINITE
+                smallest_dist = 99999999
 
                 for pos in reversed(available_path):
                     # inicializar

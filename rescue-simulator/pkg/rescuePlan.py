@@ -1,4 +1,3 @@
-from asyncio.windows_events import INFINITE
 from audioop import tostereo
 from random import randint
 import numpy as np
@@ -24,7 +23,7 @@ class RescuePlan:
         self.currentState = initialState
         self.goalPos = goal
         self.actions = []
-        self.remainingTime = INFINITE
+        self.remainingTime = 99999999
 
         #availablePath
         self.availablePath = []
