@@ -23,6 +23,7 @@ class RescuePlan:
         self.currentState = initialState
         self.goalPos = goal
         self.actions = []
+        self.agentPath = []
         self.remainingTime = 999999999
 
         #availablePath
@@ -63,89 +64,96 @@ class RescuePlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
-    ## isso aqui não pode ser em agente, tem que ser no plano de retorno
-    def calculateWayBack(self, agentPos):
+    def calculatePathToGoal(self, agentPos, goal):
         available_path = self.availablePath.copy()
-        wayBackCost = 0
-
+        cost = 0
         best_path = []
+        pos_aux = (agentPos[0], agentPos[1])
 
-        pos_aux = (agentPos.row, agentPos.col)
+        while goal not in best_path:
+            best_choice = ()
+            smallest_dist = 99999999
 
-        ## voltar pra base
-        goal = (self.initialState.row, self.initialState.col)
+            for pos in reversed(available_path):
+                # inicializar
+                if pos != pos_aux:
 
-        if (agentPos.col == 21) and (agentPos.row == 23):
-            print("teste")
-            
-        if (agentPos.row, agentPos.col) != (0,0):
+                    validPos = False
 
-            while goal not in best_path:
-                best_choice = ()
-                smallest_dist = 99999999
+                    # cima baixo or direita ou esq
+                    delta_x = abs(pos_aux[0] - pos[0])
+                    delta_y = abs(pos_aux[1] - pos[1])
 
-                for pos in reversed(available_path):
-                    # inicializar
-                    if pos != pos_aux:
+                    if delta_x == 1 and delta_y == 0:
+                        validPos = True
+                    elif delta_x == 0 and delta_y == 1:
+                        # dir ou esq
+                        validPos = True
+                    
+                    dist = euc_dist(pos, goal)
+                    if validPos and dist <= smallest_dist:
+                        smallest_dist = dist
+                        best_choice = pos
 
-                        validPos = False
-
-                        # cima baixo or direita ou esq
-                        if (abs(pos_aux[0] - pos[0]) == 1 and pos_aux[1] - pos[1] == 0) or (pos_aux[0] - pos[0] == 0 and abs(pos_aux[1] - pos[1] == 1)):
-                            # dir ou esq
-                            validPos = True
-                      
-                        if validPos and euc_dist(pos, goal) <= smallest_dist:
-                            smallest_dist = euc_dist(pos, goal)
-                            best_choice = pos
-
-                # pos_aux = próximo "passo" do agente
-                if best_choice != ():
-                    pos_aux = best_choice
-                    best_path.append(best_choice) 
-                    wayBackCost+=1
-                    available_path.remove(best_choice)
+            # pos_aux = próximo "passo" do agente
+            if best_choice != ():
+                pos_aux = best_choice
+                best_path.append(best_choice) 
+                cost+=1
+                available_path.remove(best_choice)
                         
-        return [wayBackCost, best_path]
+        return [cost, best_path]
 
     def createRescuePlan(self):
         ## inicializa na posição inicial, NÃO atualiza em tempo real (offline)
         agPosition = (self.initialState.row, self.initialState.col)
+        ## posição da base
+        basePos = (self.initialState.row, self.initialState.col)
         ## vitima mais proxima, distancia à vitima mais proxima, custo à vitima mais próxima
-        closestVict
-        closestVictDist = 9999999999.99
+        # inicializa com uma vítima qualquer
+        closestVict = self.foundVictims[0]
+        closestVictDist = 9999999999
         closestVictCost = 9999999999
         ## melhor caminho atual
         currentBestPath = []
         ## tempo disponível
         remaniningTime = self.remainingTime
 
-        ## ENQUANTO HOUVER BATERIA
+        #### ENQUANTO HOUVER BATERIA/TEMPO ####
 
-        while remaniningTime >= self.calculateFutureWayBack(agPosition) + 2 and len(self.foundVictims):
+        ## calcula o custo de volta
+        while remaniningTime >= self.calculatePathToGoal(agPosition, basePos)[0] + 0.5 and len(self.foundVictims) > 0:
+            
+            closestVict = self.foundVictims[0]
 
-            ## define vítima mais próxima
+            ## define vítima mais próxima/de menor custo
             for vict in self.foundVictims:
                 ## calcula distância atual do agente até a vítima
                 dist = euc_dist(agPosition, vict)
+                ## calcula o custo até essa vítima
+                victCost = self.calculatePathToGoal(agPosition, vict)[0] + 0.5
+                returnCost = self.calculatePathToGoal(vict, basePos)[0]
 
-                if dist < closestVictDist:
+                if victCost < closestVictCost and self.remainingTime > closestVictCost + returnCost:
                     closestVict = vict 
                     closestVictDist = dist
+                    closestVictCost = victCost
             
-            ## calcula a melhor rota e o custo até essa vítima
-
-            ## adiciona caminho ao plano do agente (salvamento ocorre de forma automática)
+            # ## calcula a melhor rota e o custo até essa vítima
+            # victCost = self.calculatePathToGoal(agPosition, closestVict)[0]
+            victPath = self.calculatePathToGoal(agPosition, closestVict)[1]
 
             ## atualiza posição do agente para a da vítima escolhida
+            agPosition = closestVict
 
             ## remove a vítima da lista de self.foundVictims
+            self.savedVictims.append(closestVict)
+            self.foundVictims.remove(closestVict)
+            self.agentPath+=victPath
 
-            
-
-
-
-        
+        backToBase = self.calculatePathToGoal(agPosition, basePos)[1]
+        self.agentPath+=backToBase
+        print(self.agentPath)
 
     def isPossibleToMove(self, toState):
         """Verifica se eh possivel ir da posicao atual para o estado (lin, col) considerando 
@@ -217,11 +225,6 @@ class RescuePlan:
                                     "L" : "O",
                                     "N" : "S"}
 
-        # ["N", "S", "L", "O", "NE", "NO", "SE", "SO"]
-
-        # if parede = adiciona a um vetor de paredes
-        # if visitado = evitar
-
         # TODO: mover pra uma função tipo "goHome"
         backwardsMovePos = {
                 (-1, 0) : "N",
@@ -229,37 +232,23 @@ class RescuePlan:
                 (0, 1) : "L", 
                 (0, -1) : "O"}
 
-        # if (self.remainingTime <= self.calculateWayBack()[0]+2):
-        #     # if (self.currentState == self.initialState):
-        #         # return [(-1, -1), self.currentState]
-        #     print("hora de voltar -- sem tempo pra escanear!")
-        #     wayBack = self.calculateWayBack()[1]
-        #     next_dir = (wayBack[0][0] - self.currentState.row, wayBack[0][1] - self.currentState.col)
-        #     nextPos = backwardsMovePos[next_dir]
-        #     state = State(self.currentState.row + wayBack[0][0], self.currentState.col + wayBack[0][1])
-        #     return [nextPos, state]
-                
-        ## posição inicial pra saber o que começar fazendo
-        result = self.selectNextPosition(possibilities[0])
-        if self.isPossibleToMove(result[1]) == 1:
-            self.chosenDir.append(possibilities[0])
-            return result
+         
 
-        if self.isPossibleToMove(result[1]) != 1:
-            for pos in possibilities:
-                result = self.selectNextPosition(pos)
-                if self.isPossibleToMove(result[1]) == 1:
-                    self.chosenDir.append(pos)
-                    return result
+        if len(self.agentPath) > 0:
 
-        ## se não puder ir em nenhuma direção: provavelmente travou
-        ## andar para trás
-        for backwards_dir in reversed(self.chosenDir):
-            result = self.selectNextPosition(backwards_possibilities[backwards_dir])
-            if self.isPossibleToMove(result[1]) == -1:
-                self.chosenDir.remove(backwards_dir)
-                return result
-        ## gastar uma energia
+            ## preciso disso
+            next_dir = (self.agentPath[0][0] - self.currentState.row, self.agentPath[0][1] - self.currentState.col)
+            ## preciso disso
+            nextPos = backwardsMovePos[next_dir]
+            ## preciso disso
+            state = State(self.currentState.row + self.agentPath[0][0], self.currentState.col + self.agentPath[0][1])
+            ## preciso disso
+            self.agentPath.remove(self.agentPath[0])
+            return [nextPos, state]
+
+        if len(self.foundVictims) == 0:
+            return [-1, -1]
+            
         ## tentar de novo
 
         # ## enquanto for possível se mover

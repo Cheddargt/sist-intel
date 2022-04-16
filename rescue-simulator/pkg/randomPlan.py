@@ -23,6 +23,7 @@ class RandomPlan:
         self.currentState = initialState
         self.goalPos = goal
         self.actions = []
+        self.returningPath = []
         self.remainingTime = 999999999
 
     def setWalls(self, walls):
@@ -58,6 +59,7 @@ class RandomPlan:
         best_path = []
 
         pos_aux = (self.currentState.row, self.currentState.col)
+        ag_pos = (self.currentState.row, self.currentState.col)
 
         ## voltar pra base
         goal = (self.initialState.row, self.initialState.col)
@@ -72,18 +74,25 @@ class RandomPlan:
                 smallest_dist = 99999999
 
                 for pos in reversed(available_path):
+
                     # inicializar
                     if pos != pos_aux:
 
                         validPos = False
 
                         # cima baixo or direita ou esq
-                        if (abs(pos_aux[0] - pos[0]) == 1 and pos_aux[1] - pos[1] == 0) or (pos_aux[0] - pos[0] == 0 and abs(pos_aux[1] - pos[1] == 1)):
+                        delta_x = abs(pos_aux[0] - pos[0])
+                        delta_y = abs(pos_aux[1] - pos[1])
+
+                        if delta_x == 1 and delta_y == 0:
+                            validPos = True
+                        elif delta_x == 0 and delta_y == 1:
                             # dir ou esq
                             validPos = True
-                      
-                        if validPos and euc_dist(pos, goal) <= smallest_dist:
-                            smallest_dist = euc_dist(pos, goal)
+
+                        dist = euc_dist(pos, goal)
+                        if validPos and dist <= smallest_dist and pos != ag_pos and pos not in self.returningPath:
+                            smallest_dist = dist
                             best_choice = pos
 
                 # pos_aux = próximo "passo" do agente
@@ -177,15 +186,28 @@ class RandomPlan:
                 (0, -1) : "O"}
 
         # TODO: consertar erro que tá fazendo o arquivo morrer
-        # if (self.remainingTime < self.calculateWayBack()[0]+2):
-        #     # if (self.currentState == self.initialState):
-        #         # return [(-1, -1), self.currentState]
-        #     print("hora de voltar -- sem tempo pra escanear!")
-        #     wayBack = self.calculateWayBack()[1]
-        #     next_dir = (wayBack[0][0] - self.currentState.row, wayBack[0][1] - self.currentState.col)
-        #     nextPos = backwardsMovePos[next_dir]
-        #     state = State(self.currentState.row + wayBack[0][0], self.currentState.col + wayBack[0][1])
-        #     return [nextPos, state]
+
+        if len(self.returningPath) > 0:
+            ## preciso disso
+            next_dir = (self.returningPath[0][0] - self.currentState.row, self.returningPath[0][1] - self.currentState.col)
+            ## preciso disso
+            nextPos = backwardsMovePos[next_dir]
+            ## preciso disso
+            state = State(self.currentState.row + self.returningPath[0][0], self.currentState.col + self.returningPath[0][1])
+            ## preciso disso
+            self.returningPath.remove(self.returningPath[0])
+            return [nextPos, state]
+
+        if (self.remainingTime < self.calculateWayBack()[0]+2):
+            # if (self.currentState == self.initialState):
+                # return [(-1, -1), self.currentState]
+            print("hora de voltar -- sem tempo pra escanear!")
+            self.returningPath = self.calculateWayBack()[1]
+            next_dir = (self.returningPath[0][0] - self.currentState.row, self.returningPath[0][1] - self.currentState.col)
+            nextPos = backwardsMovePos[next_dir]
+            state = State(self.currentState.row + self.returningPath[0][0], self.currentState.col + self.returningPath[0][1])
+            self.returningPath.remove(self.returningPath[0])
+            return [nextPos, state]
                 
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition(possibilities[0])

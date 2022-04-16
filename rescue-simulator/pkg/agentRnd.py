@@ -39,6 +39,7 @@ class AgentRnd:
 
         ## Obtem o tempo que tem para executar
         self.tv = configDict["Tv"]
+        self.initialTime = configDict["Tv"]
         print("Tempo disponivel: ", self.tv)
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
@@ -126,7 +127,7 @@ class AgentRnd:
         # passar o tempo remanescente para o plano decidir o que fazer
         self.plan.setRemainingTime(self.tv)
 
-        if self.tv == 0 and self.currentState.row == 0 and self.currentState.col == 0:
+        if self.tv < self.initialTime and self.currentState.row == 0 and self.currentState.col == 0:
             print("!!! Voltou pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1

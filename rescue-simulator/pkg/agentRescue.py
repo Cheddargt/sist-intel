@@ -30,8 +30,11 @@ class AgentRescue:
 
         self.model = model
 
+        self.savedVictims = []
+
         ## Obtem o tempo que tem para executar
         self.ts = configDict["Ts"]
+        self.initialTime = configDict["Ts"]
         print("Tempo disponivel: ", self.ts)
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
@@ -79,6 +82,9 @@ class AgentRescue:
         ## adicionar crencas sobre o estado do ambiente ao plano - neste exemplo, o agente faz uma copia do que existe no ambiente.
         ## Em situacoes de exploracao, o agente deve aprender em tempo de execucao onde estao as paredes
         self.plan.setWalls(model.maze.walls)
+
+        ## Cria todo o plano de salvamento
+        self.plan.createRescuePlan()
         
         ## Adiciona o(s) planos a biblioteca de planos do agente
         self.libPlan=[self.plan]
@@ -117,7 +123,7 @@ class AgentRescue:
         self.ts -= self.prob.getActionCost(self.previousAction)
         print("Tempo disponivel: ", self.ts)
 
-        if self.ts == 0 and self.currentState.row == 0 and self.currentState.col == 0:
+        if self.ts < self.initialTime and self.currentState.row == 0 and self.currentState.col == 0:
             print("!!! Voltou pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1
@@ -135,15 +141,22 @@ class AgentRescue:
         ## Verifica se tem vitima na posicao atual    
         victimId = self.victimPresenceSensor()
         if victimId > 0:
-            print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
-            print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
-            if (self.currentState.row, self.currentState.col) not in self.foundVictims:
-                self.foundVictims.append((self.currentState.row, self.currentState.col))
+            print ("Vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
+            print ("---==== Entregando pacote de suprimento!! ====---" )
+            if (self.currentState.row, self.currentState.col) not in self.savedVictims:
+                self.savedVictims.append((self.currentState.row, self.currentState.col))
 
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>
         result = self.plan.chooseAction()
+        
+        if result[0] == -1 and result[1] == -1:
+            print ("Fim do trajeto")
+            return -1
         print("Ag deliberou pela acao: ", result[0], " o estado resultado esperado é: ", result[1])
+
+        
+        
 
         ## Executa esse acao, atraves do metodo executeGo 
         self.executeGo(result[0])
