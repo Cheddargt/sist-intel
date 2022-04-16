@@ -63,10 +63,10 @@ def main():
     agent_vsc.deliberate()
     # added by zeni
     model.draw()
-    time.sleep(0.01)
+    # time.sleep(0.0001)
     while agent_vsc.deliberate() != -1:
         model.draw()
-        time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+        # time.sleep(0.0001) # para dar tempo de visualizar as movimentacoes do agente no labirinto
 
     model.draw()
 

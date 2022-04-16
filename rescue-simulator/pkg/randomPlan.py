@@ -208,7 +208,8 @@ class RandomPlan:
             state = State(self.currentState.row + self.returningPath[0][0], self.currentState.col + self.returningPath[0][1])
             self.returningPath.remove(self.returningPath[0])
             return [nextPos, state]
-                
+            
+        
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition(possibilities[0])
         if self.isPossibleToMove(result[1]) == 1:

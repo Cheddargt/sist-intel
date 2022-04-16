@@ -123,7 +123,7 @@ class RescuePlan:
 
         ## calcula o custo de volta
         while remaniningTime >= self.calculatePathToGoal(agPosition, basePos)[0] + 0.5 and len(self.foundVictims) > 0:
-            
+
             closestVict = self.foundVictims[0]
 
             ## define vítima mais próxima/de menor custo
@@ -247,6 +247,7 @@ class RescuePlan:
             return [nextPos, state]
 
         if len(self.foundVictims) == 0:
+            print ("vítimas salvas: ", len(self.savedVictims))
             return [-1, -1]
             
         ## tentar de novo

@@ -125,6 +125,10 @@ class AgentRescue:
 
         if self.ts < self.initialTime and self.currentState.row == 0 and self.currentState.col == 0:
             print("!!! Voltou pra base !!!")
+            print("Vítimas salvas: ", self.savedVictims)
+            print("Quantidade vítimas salvas: ", len(self.savedVictims))
+            print("Tempo de salvamento: ", self.initialTime - self.ts)
+
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1
         elif self.ts == 0 and self.currentState.row != 0 and self.currentState.col != 0:
