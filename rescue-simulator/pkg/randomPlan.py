@@ -25,6 +25,7 @@ class RandomPlan:
         self.actions = []
         self.returningPath = []
         self.remainingTime = 999999999
+        self.lastPos = []
 
     def setWalls(self, walls):
         row = 0
@@ -47,6 +48,9 @@ class RandomPlan:
 
     def setVisitedPos(self, visited):
         self.visitedPos = visited
+
+    def setLastPos(self, pos):
+        self.lastPos = pos
     
     def updateCurrentState(self, state):
          self.currentState = state
@@ -187,6 +191,12 @@ class RandomPlan:
 
         # TODO: consertar erro que tá fazendo o arquivo morrer
 
+        if (self.currentState.row == 30 and self.currentState.col == 16):
+            print("warning") 
+
+        if self.lastPos == (self.currentState.row, self.currentState.col):
+            self.chosenDir.pop()
+
         if len(self.returningPath) > 0:
             ## preciso disso
             next_dir = (self.returningPath[0][0] - self.currentState.row, self.returningPath[0][1] - self.currentState.col)
@@ -220,6 +230,8 @@ class RandomPlan:
             for pos in possibilities:
                 result = self.selectNextPosition(pos)
                 if self.isPossibleToMove(result[1]) == 1:
+                    if self.lastPos == (self.currentState.row, self.currentState.col):
+                        self.chosenDir.remove(self.chosenDir[len(self.chosenDir)-1])
                     self.chosenDir.append(pos)
                     return result
 

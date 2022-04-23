@@ -179,7 +179,7 @@ class AgentRnd:
 
         ## added by zeni
         self.visited = self.model.visitedPos
-
+        
         ## added by zeni
         ## não tá dando pra passar pra cá?
         self.knownWalls = self.model.knownWalls
@@ -189,6 +189,8 @@ class AgentRnd:
             self.plan.setKnownWalls(self.knownWalls)
 
         self.plan.setVisitedPos(self.visited)
+
+        self.plan.setLastPos((self.currentState.row, self.currentState.col))
 
         # print(f"Ag visitou: {self.visited}")
         
