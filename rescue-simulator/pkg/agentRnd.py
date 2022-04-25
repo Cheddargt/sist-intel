@@ -127,15 +127,22 @@ class AgentRnd:
         # passar o tempo remanescente para o plano decidir o que fazer
         self.plan.setRemainingTime(self.tv)
 
-        if self.tv < self.initialTime and self.currentState.row == 0 and self.currentState.col == 0:
-            print("!!! Voltou pra base !!!")
-            print("Vítimas encontradas: ", self.foundVictims)
-            print("Quantidade vítimas encontradas: ", len(self.foundVictims))
-            print("Tempo de vasculhamento: ", self.initialTime - self.tv)
+        ## TAREFA 1
+        # if self.tv < self.initialTime and self.currentState.row == 0 and self.currentState.col == 0:
+        #     print("!!! Voltou pra base !!!")
+        #     print("Vítimas encontradas: ", self.foundVictims)
+        #     print("Quantidade vítimas encontradas: ", len(self.foundVictims))
+        #     print("Tempo de vasculhamento: ", self.initialTime - self.tv)
 
-            del self.libPlan[0]  ## retira plano da biblioteca
-            return -1
-        elif self.tv == 0 and self.currentState.row != 0 and self.currentState.col != 0:
+        #     del self.libPlan[0]  ## retira plano da biblioteca
+        #     return -1
+        # elif self.tv == 0 and self.currentState.row != 0 and self.currentState.col != 0:
+        #     print("!!! Ag não conseguiu voltar pra base !!!")
+        #     del self.libPlan[0]  ## retira plano da biblioteca
+        #     return -1
+
+        ## TAREFA 2
+        if self.tv == 0:
             print("!!! Ag não conseguiu voltar pra base !!!")
             del self.libPlan[0]  ## retira plano da biblioteca
             return -1

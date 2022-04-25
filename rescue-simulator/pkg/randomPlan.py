@@ -171,11 +171,15 @@ class RandomPlan:
         @return: tupla contendo a acao (direcao) e uma instância da classe State que representa a posição esperada após a execução
         """
 
-        possibilities = ["O", "S", "L", "N"]  
+        possibilities = ["O", "S", "L", "N", "SE", "SO"]  
         backwards_possibilities = { "O" : "L",
                                     "S" : "N",
                                     "L" : "O",
-                                    "N" : "S"}
+                                    "N" : "S",
+                                    "SE" : "NO",
+                                    "SO" : "NE",
+                                    "NE" : "SO",
+                                    "NO" : "SE"}
 
         # ["N", "S", "L", "O", "NE", "NO", "SE", "SO"]
 
@@ -191,11 +195,11 @@ class RandomPlan:
 
         # TODO: consertar erro que tá fazendo o arquivo morrer
 
-        if (self.currentState.row == 30 and self.currentState.col == 16):
+        if (self.currentState.row == 0 and self.currentState.col == 6):
             print("warning") 
 
         if self.lastPos == (self.currentState.row, self.currentState.col):
-            self.chosenDir.pop()
+           self.chosenDir.remove(self.chosenDir[0])
 
         if len(self.returningPath) > 0:
             ## preciso disso
@@ -208,38 +212,40 @@ class RandomPlan:
             self.returningPath.remove(self.returningPath[0])
             return [nextPos, state]
 
-        if (self.remainingTime < self.calculateWayBack()[0]+2):
-            # if (self.currentState == self.initialState):
-                # return [(-1, -1), self.currentState]
-            print("hora de voltar -- sem tempo pra escanear!")
-            self.returningPath = self.calculateWayBack()[1]
-            next_dir = (self.returningPath[0][0] - self.currentState.row, self.returningPath[0][1] - self.currentState.col)
-            nextPos = backwardsMovePos[next_dir]
-            state = State(self.currentState.row + self.returningPath[0][0], self.currentState.col + self.returningPath[0][1])
-            self.returningPath.remove(self.returningPath[0])
-            return [nextPos, state]
+        # if (self.remainingTime < self.calculateWayBack()[0]+2):
+        #     # if (self.currentState == self.initialState):
+        #         # return [(-1, -1), self.currentState]
+        #     print("hora de voltar -- sem tempo pra escanear!")
+        #     self.returningPath = self.calculateWayBack()[1]
+        #     next_dir = (self.returningPath[0][0] - self.currentState.row, self.returningPath[0][1] - self.currentState.col)
+        #     nextPos = backwardsMovePos[next_dir]
+        #     state = State(self.currentState.row + self.returningPath[0][0], self.currentState.col + self.returningPath[0][1])
+        #     self.returningPath.remove(self.returningPath[0])
+        #     return [nextPos, state]
             
         
         ## posição inicial pra saber o que começar fazendo
         result = self.selectNextPosition(possibilities[0])
         if self.isPossibleToMove(result[1]) == 1:
-            self.chosenDir.append(possibilities[0])
+            self.chosenDir.insert(0, possibilities[0])
             return result
 
         if self.isPossibleToMove(result[1]) != 1:
             for pos in possibilities:
                 result = self.selectNextPosition(pos)
                 if self.isPossibleToMove(result[1]) == 1:
-                    if self.lastPos == (self.currentState.row, self.currentState.col):
-                        self.chosenDir.remove(self.chosenDir[len(self.chosenDir)-1])
-                    self.chosenDir.append(pos)
+                    # if self.lastPos == (self.currentState.row, self.currentState.col):
+                    #     self.chosenDir.remove(self.chosenDir[0])
+                    self.chosenDir.insert(0, pos)
                     return result
+                
 
         ## se não puder ir em nenhuma direção: provavelmente travou
         ## andar para trás
-        for backwards_dir in reversed(self.chosenDir):
+        for backwards_dir in self.chosenDir:
             result = self.selectNextPosition(backwards_possibilities[backwards_dir])
             if self.isPossibleToMove(result[1]) == -1:
+                # remove a direção escolhida da lista de direções, começando pelo fim (pra remover a última)
                 self.chosenDir.remove(backwards_dir)
                 return result
         ## gastar uma energia

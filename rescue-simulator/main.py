@@ -93,8 +93,8 @@ def main():
 
     # Cria um agente salvador
     
-    agent_rsc = AgentRescue(model, configDict, agentVascKnowledge)
     print('conhecimento do agt vasc: ', agentVascKnowledge)
+    agent_rsc = AgentRescue(model, configDict, agentVascKnowledge)
 
     while agent_rsc.deliberate() != -1:
         model.draw()
