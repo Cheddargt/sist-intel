@@ -64,49 +64,6 @@ class RescuePlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
-    def calculatePathToGoal(self, agentPos, goal):
-        available_path = self.availablePath.copy()
-        cost = 0
-        best_path = []
-        pos_aux = (agentPos[0], agentPos[1])
-
-        if goal == (13,5):
-            print ("warning")
-
-        while goal not in best_path:
-            best_choice = ()
-            smallest_dist = 99999999
-
-            for pos in reversed(available_path):
-                # inicializar
-                if pos != pos_aux:
-
-                    validPos = False
-
-                    # cima baixo or direita ou esq
-                    delta_x = abs(pos_aux[0] - pos[0])
-                    delta_y = abs(pos_aux[1] - pos[1])
-
-                    if delta_x == 1 and delta_y == 0:
-                        validPos = True
-                    elif delta_x == 0 and delta_y == 1:
-                        # dir ou esq
-                        validPos = True
-                    
-                    dist = euc_dist(pos, goal)
-                    if validPos and dist <= smallest_dist:
-                        smallest_dist = dist
-                        best_choice = pos
-
-            # pos_aux = próximo "passo" do agente
-            if best_choice != ():
-                pos_aux = best_choice
-                best_path.append(best_choice) 
-                cost+=1
-                available_path.remove(best_choice)
-                        
-        return [cost, best_path]
-
     def createRescuePlan(self):
         ## inicializa na posição inicial, NÃO atualiza em tempo real (offline)
         agPosition = (self.initialState.row, self.initialState.col)
@@ -122,27 +79,21 @@ class RescuePlan:
         ## tempo disponível
         remaniningTime = self.remainingTime
 
-        #### ENQUANTO HOUVER BATERIA/TEMPO ####
+        closestVict = self.foundVictims[0]
 
-        ## calcula o custo de volta
-        while remaniningTime >= self.calculatePathToGoal(agPosition, basePos)[0] + 0.5:
+        ## define vítima mais próxima/de menor custo
+        for vict in self.foundVictims:
+            victPos = vict['pos']
+            victAccTime = vict["difAcesso"]
+            victSinVital = vict["sinVitais"]
+            ## calcula distância atual do agente até a vítima
+            dist = euc_dist(agPosition, vict_pos)
 
-            closestVict = self.foundVictims[0]
-
-            ## define vítima mais próxima/de menor custo
-            for vict in self.foundVictims:
-                vict_pos = vict['pos']
-                ## calcula distância atual do agente até a vítima
-                dist = euc_dist(agPosition, vict_pos)
-                ## calcula o custo até essa vítima
-                victCost = self.calculatePathToGoal(agPosition, vict_pos)[0] + 0.5
-                returnCost = self.calculatePathToGoal(vict_pos, basePos)[0]
-
-                if victCost < closestVictCost and self.remainingTime > closestVictCost + returnCost:
-                    closestVict = vict_pos 
-                    closestVictDist = dist
-                    closestVictCost = victCost
-            
+            if victCost < closestVictCost and self.remainingTime > closestVictCost + returnCost:
+                closestVict = vict_pos 
+                closestVictDist = dist
+                closestVictCost = victCost
+        
             # ## calcula a melhor rota e o custo até essa vítima
             # victCost = self.calculatePathToGoal(agPosition, closestVict)[0]
             victPath = self.calculatePathToGoal(agPosition, closestVict)[1]
