@@ -64,6 +64,17 @@ class RescuePlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
+    def mutateSolution(self, solution):
+
+        possiblity = 0.04
+
+        for vict in solution:
+            if randint(0, 100)/100 <= possiblity:
+                if vict["gene"] == 0: vict["gene"] = 1
+                if vict["gene"] == 1: vict["gene"] = 0
+
+        return solution
+
     def createRescuePlan(self):
         ## inicializa na posição inicial, NÃO atualiza em tempo real (offline)
         agPosition = (self.initialState.row, self.initialState.col)
