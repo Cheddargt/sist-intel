@@ -3,6 +3,7 @@ from random import randint
 import numpy as np
 
 from matplotlib.style import available
+from urllib3 import ProxyManager
 from state import State
 
 def euc_dist (a, b):
@@ -64,61 +65,261 @@ class RescuePlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
-    def mutateSolution(self, solution):
+    def mutateSolution(self, solution, remainingTime):
 
-        possiblity = 0.04
+        newSolution = solution.copy()
 
-        for vict in solution:
+        possiblity = 0.01 # possibilidade de 4% de ocorrer
+
+        for vict in newSolution:
             if randint(0, 100)/100 <= possiblity:
                 if vict["gene"] == 0: vict["gene"] = 1
                 if vict["gene"] == 1: vict["gene"] = 0
 
+        # #TODO: alterar pra realizar o fitness
+        # solution['fitness'] = self.fitnessFunction(solution['solution'], remainingTime)
+
         return solution
 
-    def createRescuePlan(self):
-        ## inicializa na posição inicial, NÃO atualiza em tempo real (offline)
-        agPosition = (self.initialState.row, self.initialState.col)
-        ## posição da base
-        basePos = (self.initialState.row, self.initialState.col)
-        ## vitima mais proxima, distancia à vitima mais proxima, custo à vitima mais próxima
-        # inicializa com uma vítima qualquer
-        closestVict = self.foundVictims[0]
-        closestVictDist = 9999999999
-        closestVictCost = 9999999999
-        ## melhor caminho atual
-        currentBestPath = []
-        ## tempo disponível
-        remaniningTime = self.remainingTime
+    def singlePointCrossover (self, parentA, parentB):
 
-        closestVict = self.foundVictims[0]
+        firstChild = parentA.copy()
+        firstChild.pop('fitness', None)
+        firstChild.pop('fitnessNormalizado', None)
 
-        ## define vítima mais próxima/de menor custo
-        for vict in self.foundVictims:
-            victPos = vict['pos']
-            victAccTime = vict["difAcesso"]
-            victSinVital = vict["sinVitais"]
-            ## calcula distância atual do agente até a vítima
-            dist = euc_dist(agPosition, vict_pos)
+        secondChild = parentB.copy()
+        secondChild.pop('fitness', None)
+        secondChild.pop('fitnessNormalizado', None)
 
-            if victCost < closestVictCost and self.remainingTime > closestVictCost + returnCost:
-                closestVict = vict_pos 
-                closestVictDist = dist
-                closestVictCost = victCost
+        crossoverPoint = randint (0, len(firstChild['solution'])-1)
+
+        left_A = firstChild['solution'][:crossoverPoint] # guarda o pedaço de vetor parentA de crossoverPoint até o final
+        right_A = firstChild['solution'][crossoverPoint:] # guarda o pedaço de vetor parentA de crossoverPoint até o final
+        left_B = secondChild['solution'][:crossoverPoint] # guarda o pedaço de vetor parentB de crossoverPoint até o final
+        right_B = secondChild['solution'][crossoverPoint:] # guarda o pedaço de vetor parentB de crossoverPoint até o final
+
+        firstChild['solution'] = left_A + right_A
+        secondChild['solution'] = left_B + right_B
+
+        return [firstChild, secondChild]
+
+    def createSolutionArray (self, victArray):
         
-            # ## calcula a melhor rota e o custo até essa vítima
-            # victCost = self.calculatePathToGoal(agPosition, closestVict)[0]
-            victPath = self.calculatePathToGoal(agPosition, closestVict)[1]
+        for vict in victArray:
+            vict['gene'] = 0
 
-            ## atualiza posição do agente para a da vítima escolhida
-            agPosition = closestVict
+        return victArray
+        
+    def createFirstGeneration (self, victArray, NUM_SOLUCOES, remainingTime):
 
-            ## remove a vítima da lista de self.foundVictims
-            self.savedVictims.append(closestVict)
-            self.foundVictims.remove(closestVict)
-            self.agentPath+=victPath
+        emptyArray = {}
+        emptyArray['solution'] = victArray.copy()
 
-        backToBase = self.calculatePathToGoal(agPosition, basePos)[1]
-        self.agentPath+=backToBase
+        # probabilidade de ser solução ou não -- apenas para inicialização!!
+        solutProbability = 0.3
+
+        firstGen = []
+
+
+        for i in range(NUM_SOLUCOES):
+            emptyArray = {}
+            emptyArray['solution'] = victArray.copy()
+            for vict in emptyArray['solution']:
+                if randint(0, 100)/100 <= solutProbability:
+                    vict['gene'] = 1
+                else:   
+                    vict['gene'] = 0
+            emptyArray['fitness'] = self.fitnessFunction(emptyArray['solution'], remainingTime)
+            firstGen.append(emptyArray)
+
+        return firstGen
+
+    def fitnessFunction (self, solution, remainingTime):
+
+        gravidadeAcumulada = 0;
+        tempoAcumulado = 0;
+
+        for vict in solution:
+            if vict['gene'] == 1:
+                gravidadeAcumulada += vict['sinVitais']
+                tempoAcumulado += vict['difAcesso']
+
+        if tempoAcumulado > remainingTime:
+            gravidadeAcumulada = 0;
+
+        return gravidadeAcumulada
+
+    def elitismSelection (self, geracao):
+
+        # inicializar com soluções quaisquer
+        bestSolution = {}
+        bestSolution['fitness'] = 0
+        secondBestSolution = {}
+        secondBestSolution['fitness'] = 0
+
+
+        # find best solution
+        for solution in geracao:
+            if solution['fitness'] > bestSolution['fitness']:
+                bestSolution = solution 
+
+        # find second best solution
+        for solution in geracao:
+            if solution['fitness'] > secondBestSolution['fitness'] and solution != bestSolution:
+                secondBestSolution = solution
+
+        return [bestSolution, secondBestSolution]
+
+    def rwheelSelection (self, currentGeracao, remainingTime):
+
+        currentGen = currentGeracao.copy()
+
+        fitnessAcumulado = 0
+
+        for solution in currentGen:
+            fitnessAcumulado += solution['fitness']
+
+
+        for solution in currentGen:
+            if solution['fitness'] != 0:
+                solution['fitnessNormalizado'] = solution['fitness']/fitnessAcumulado
+            else:
+                solution['fitnessNormalizado'] = 0
+        
+        selectedParents = []
+
+        while len(selectedParents) < 2:
+            selectedChance = randint(0, 100)/100
+            fitnessNormalizadoAcumulado = 0
+            for solution in currentGen:
+                if solution['fitnessNormalizado'] >= selectedChance and solution not in selectedParents:
+                    selectedParents.append(solution)
+                    break
+                fitnessNormalizadoAcumulado += solution['fitnessNormalizado']
+
+        resultingChildren = self.singlePointCrossover(selectedParents[0], selectedParents[1])
+
+        resultingChildren[0]['fitness'] = self.fitnessFunction(resultingChildren[0]['solution'], remainingTime)
+        resultingChildren[1]['fitness'] = self.fitnessFunction(selectedParents[0]['solution'], remainingTime)
+
+        return resultingChildren
+
+    def createRescuePlan(self):
+        agPosition = (self.initialState.row, self.initialState.col)
+        basePos = (self.initialState.row, self.initialState.col)
+        remainingTime = self.remainingTime
+        NUM_GERACOES = 10 # número de gerações
+        NUM_SOLUCOES = 10 # número de soluções por geração - vetor de vítimas
+        primeiraGeracao = []
+        currentGeracao = []
+        proximaGeracao = []
+
+        ## inicializa um vetor de soluções neutro (todas as vítimas possuem gene = 0)
+        primeiraGeracao = self.createFirstGeneration(self.foundVictims, NUM_SOLUCOES, remainingTime)
+        currentGeracao = primeiraGeracao
+
+        ## imprimir geração
+        print("GEN # 1: gAcumulado = ", end=""),
+
+
+
+        for solution in primeiraGeracao:
+            if solution['fitness'] != 0:
+                print(str(round(solution['fitness'], 2)), " ", end="")
+
+        print("GEN # 1: tGasto = ", end=""),
+
+        for solution in primeiraGeracao:
+            tempoacumulado = 0
+            for vict in solution['solution']:
+                if vict['gene'] == 1:
+                    tempoacumulado += vict['difAcesso']
+            print(tempoacumulado, " ", end="")
+        
+        print("")
+        print(" ------------- ")
+        
+        for i in range(NUM_GERACOES-1):     # -1 pra considerar a primeira geração já criada
+                # carrega os 2 melhores pra próxima geração
+                elitismCarryOver = self.elitismSelection(currentGeracao)
+                proximaGeracao = elitismCarryOver
+
+                while len(proximaGeracao) < NUM_SOLUCOES:
+
+                    filhos = self.rwheelSelection(currentGeracao, remainingTime)
+                    proximaGeracao += filhos
+
+                ## realizar mutação
+
+                # for solution in proximaGeracao:
+                #     solution['solution'] = self.mutateSolution(solution['solution'], remainingTime)
+                    
+
+                # TODO: realizar fitness pós mutação
+                
+                ## imprimir geração
+                print("GEN #", i+2 ,": gAcumulado = ", end=""),
+
+                for solution in proximaGeracao:
+                    if solution['fitness'] != 0:
+                        print(str(round(solution['fitness'], 2)), " ", end="")
+
+                print("")
+
+                print("tGasto = ", end=""),
+
+                for solution in primeiraGeracao:
+                    tempoacumulado = 0
+                    for vict in solution['solution']:
+                        if vict['gene'] == 1:
+                            tempoacumulado += vict['difAcesso']
+                    print(tempoacumulado, " ", end="")
+                
+                print("")
+                print(" ------------- ")
+
+                currentGeracao = proximaGeracao
+                proximaGeracao = []
+
+                # proxima geracao
+                print("")
+
+        best_fitness = currentGeracao[0]['fitness']
+        best_solution = currentGeracao[0]
+
+        for solution in currentGeracao:
+            if solution['fitness'] > best_fitness:
+                best_fitness = solution['fitness']
+                best_solution = solution
+
+        VictSalvas = 0 #Vs
+        ts = 0  #ts
+        victTotal = len(self.foundVictims) #V
+        gravidadeAcumulada = 0 #G
+        VictSalvasPorTempo = 0
+
+
+        for vict in best_solution['solution']:
+            if vict['gene'] == 1:
+                VictSalvas += 1
+                ts += vict['difAcesso']
+                gravidadeAcumulada += vict['sinVitais']
+
+        if (ts != 0):
+            VictSalvasPorTempo = VictSalvas/ts #S
+
+        print("Vs = ", VictSalvas)
+        print("ts = ", ts)
+        print("V = ", victTotal)
+        print("G = ", gravidadeAcumulada)
+        print("S = ", VictSalvasPorTempo)
+        print("")
+
+        # inicializa primeira geração
+        # for i in NUM_SOLUCOES:
+
+
+       
         print(self.agentPath)
 
     def isPossibleToMove(self, toState):
