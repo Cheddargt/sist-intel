@@ -1,6 +1,7 @@
 from audioop import tostereo
 from random import randint
 import numpy as np
+import copy
 
 from matplotlib.style import available
 from urllib3 import ProxyManager
@@ -67,28 +68,28 @@ class RescuePlan:
 
     def mutateSolution(self, solution, remainingTime):
 
-        newSolution = solution.copy()
+        newSolution = copy.deepcopy(solution)
 
-        possiblity = 0.01 # possibilidade de 4% de ocorrer
+        possiblity = 0.2 # possibilidade de 4% de ocorrer
 
-        for vict in newSolution:
+        for vict in newSolution['solution']:
             ## TODO: consertar erro - valores não são aleatórios!
             if randint(0, 100)/100 <= possiblity:
                 if vict["gene"] == 0: vict["gene"] = 1
                 if vict["gene"] == 1: vict["gene"] = 0
 
         # #TODO: alterar pra realizar o fitness
-        # solution['fitness'] = self.fitnessFunction(solution['solution'], remainingTime)
+        newSolution['fitness'] = self.fitnessFunction(newSolution['solution'], remainingTime)
 
         return solution
 
     def singlePointCrossover (self, parentA, parentB):
 
-        firstChild = parentA.copy()
+        firstChild = copy.deepcopy(parentA)
         firstChild.pop('fitness', None)
         firstChild.pop('fitnessNormalizado', None)
 
-        secondChild = parentB.copy()
+        secondChild = copy.deepcopy(parentB)
         secondChild.pop('fitness', None)
         secondChild.pop('fitnessNormalizado', None)
 
@@ -114,19 +115,18 @@ class RescuePlan:
     def createFirstGeneration (self, victArray, NUM_SOLUCOES, remainingTime):
 
         emptyArray = {}
-        emptyArray['solution'] = victArray.copy()
+        emptyArray['solution'] = copy.deepcopy(victArray)
 
         # probabilidade de ser solução ou não -- apenas para inicialização!!
-        solutProbability = 0.1
+        solutProbability = 0.3
 
         firstGen = []
 
-
         for i in range(NUM_SOLUCOES):
             emptyArray = {}
-            emptyArray['solution'] = victArray.copy()
+            emptyArray['solution'] = copy.deepcopy(victArray)
             for vict in emptyArray['solution']:
-                ## TODO: consertar erro - valores não são aleatórios!
+                ## valores aleatórios estão mudando
                 randomValue = randint(0, 100)/100
                 if randomValue <= solutProbability:
                     vict['gene'] = 1
@@ -175,7 +175,7 @@ class RescuePlan:
 
     def rwheelSelection (self, currentGeracao, remainingTime):
 
-        currentGen = currentGeracao.copy()
+        currentGen = copy.deepcopy(currentGeracao)
 
         fitnessAcumulado = 0
 
@@ -211,8 +211,8 @@ class RescuePlan:
         agPosition = (self.initialState.row, self.initialState.col)
         basePos = (self.initialState.row, self.initialState.col)
         remainingTime = self.remainingTime
-        NUM_GERACOES = 10 # número de gerações
-        NUM_SOLUCOES = 10 # número de soluções por geração - vetor de vítimas
+        NUM_GERACOES = 100 # número de gerações
+        NUM_SOLUCOES = 100 # número de soluções por geração - vetor de vítimas
         primeiraGeracao = []
         currentGeracao = []
         proximaGeracao = []
@@ -233,19 +233,18 @@ class RescuePlan:
 
         for solution in primeiraGeracao:
             tempoacumulado = 0
-            for vict in solution['solution']:
-                if vict['gene'] == 1 and solution['fitness'] > 0:
-                    tempoacumulado += vict['difAcesso']
+            # for vict in solution['solution']:
+            #     if vict['gene'] == 1 and solution['fitness'] > 0:
+            #         tempoacumulado += vict['difAcesso']
             print(tempoacumulado, " ", end="")
         print("")
 
-        for solution in primeiraGeracao:
-            print("[", end="")
-            for vict in solution['solution']:
-                print(vict['gene'], end="")
-            print("]")
+        # for solution in primeiraGeracao:
+            # print("[", end="")
+            # for vict in solution['solution']:
+            #     print(vict['gene'], end="")
+            # print("]")
         
-        print("")
         print(" ------------- ")
         
         for i in range(NUM_GERACOES-1):     # -1 pra considerar a primeira geração já criada
@@ -260,8 +259,8 @@ class RescuePlan:
 
                 ## realizar mutação
 
-                # for solution in proximaGeracao:
-                #     solution['solution'] = self.mutateSolution(solution['solution'], remainingTime)
+                for j in range(len(proximaGeracao)-1):
+                    proximaGeracao[j] = self.mutateSolution(proximaGeracao[j], remainingTime)
                     
 
                 # TODO: realizar fitness pós mutação
@@ -284,11 +283,11 @@ class RescuePlan:
                     print(tempoacumulado, " ", end="")
                 print("")
 
-                for solution in currentGeracao:
-                    print("[", end="")
-                    for vict in solution['solution']:
-                        print(vict['gene'], end="")
-                    print("]")
+                # for solution in currentGeracao:
+                #     print("[", end="")
+                #     for vict in solution['solution']:
+                #         print(vict['gene'], end="")
+                #     print("]")
                 
                 print("")
                 print(" ------------- ")

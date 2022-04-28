@@ -21,7 +21,7 @@ def buildMaze(model):
 
 
 def main():
-    # Lê arquivo config.txt
+    # Le arquivo config.txt
     arq = open(os.path.join("config_data", "config.txt"), "r")
     configDict = {}
     for line in arq:
