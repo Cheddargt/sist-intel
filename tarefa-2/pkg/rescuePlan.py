@@ -72,6 +72,7 @@ class RescuePlan:
         possiblity = 0.01 # possibilidade de 4% de ocorrer
 
         for vict in newSolution:
+            ## TODO: consertar erro - valores não são aleatórios!
             if randint(0, 100)/100 <= possiblity:
                 if vict["gene"] == 0: vict["gene"] = 1
                 if vict["gene"] == 1: vict["gene"] = 0
@@ -116,7 +117,7 @@ class RescuePlan:
         emptyArray['solution'] = victArray.copy()
 
         # probabilidade de ser solução ou não -- apenas para inicialização!!
-        solutProbability = 0.3
+        solutProbability = 0.1
 
         firstGen = []
 
@@ -125,7 +126,9 @@ class RescuePlan:
             emptyArray = {}
             emptyArray['solution'] = victArray.copy()
             for vict in emptyArray['solution']:
-                if randint(0, 100)/100 <= solutProbability:
+                ## TODO: consertar erro - valores não são aleatórios!
+                randomValue = randint(0, 100)/100
+                if randomValue <= solutProbability:
                     vict['gene'] = 1
                 else:   
                     vict['gene'] = 0
@@ -221,20 +224,26 @@ class RescuePlan:
         ## imprimir geração
         print("GEN # 1: gAcumulado = ", end=""),
 
-
-
         for solution in primeiraGeracao:
             if solution['fitness'] != 0:
                 print(str(round(solution['fitness'], 2)), " ", end="")
+        print("")
 
-        print("GEN # 1: tGasto = ", end=""),
+        print("tGasto = ", end=""),
 
         for solution in primeiraGeracao:
             tempoacumulado = 0
             for vict in solution['solution']:
-                if vict['gene'] == 1:
+                if vict['gene'] == 1 and solution['fitness'] > 0:
                     tempoacumulado += vict['difAcesso']
             print(tempoacumulado, " ", end="")
+        print("")
+
+        for solution in primeiraGeracao:
+            print("[", end="")
+            for vict in solution['solution']:
+                print(vict['gene'], end="")
+            print("]")
         
         print("")
         print(" ------------- ")
@@ -260,23 +269,30 @@ class RescuePlan:
                 ## imprimir geração
                 print("GEN #", i+2 ,": gAcumulado = ", end=""),
 
-                for solution in proximaGeracao:
+                for solution in currentGeracao:
                     if solution['fitness'] != 0:
                         print(str(round(solution['fitness'], 2)), " ", end="")
-
                 print("")
 
                 print("tGasto = ", end=""),
 
-                for solution in primeiraGeracao:
+                for solution in currentGeracao:
                     tempoacumulado = 0
                     for vict in solution['solution']:
-                        if vict['gene'] == 1:
+                        if vict['gene'] == 1 and solution['fitness'] > 0:
                             tempoacumulado += vict['difAcesso']
                     print(tempoacumulado, " ", end="")
+                print("")
+
+                for solution in currentGeracao:
+                    print("[", end="")
+                    for vict in solution['solution']:
+                        print(vict['gene'], end="")
+                    print("]")
                 
                 print("")
                 print(" ------------- ")
+        
 
                 currentGeracao = proximaGeracao
                 proximaGeracao = []
