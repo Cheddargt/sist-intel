@@ -66,44 +66,52 @@ class RescuePlan:
     def updateCurrentState(self, state):
          self.currentState = state
 
+    # realiza a mutação
     def mutateSolution(self, solution, remainingTime):
 
         newSolution = copy.deepcopy(solution)
 
-        possiblity = 0.2 # possibilidade de 4% de ocorrer
+        probability = 0.2 # possibilidade de 20% de ocorrer
 
         for vict in newSolution['solution']:
-            ## TODO: consertar erro - valores não são aleatórios!
-            if randint(0, 100)/100 <= possiblity:
+            if randint(0, 100)/100 <= probability:
                 if vict["gene"] == 0: vict["gene"] = 1
                 if vict["gene"] == 1: vict["gene"] = 0
 
-        # #TODO: alterar pra realizar o fitness
+        # realiza o fitness
         newSolution['fitness'] = self.fitnessFunction(newSolution['solution'], remainingTime)
 
         return solution
 
+    # crossover de single point
     def singlePointCrossover (self, parentA, parentB):
 
-        firstChild = copy.deepcopy(parentA)
-        firstChild.pop('fitness', None)
-        firstChild.pop('fitnessNormalizado', None)
+        crossoverProbability = 0.7
 
-        secondChild = copy.deepcopy(parentB)
-        secondChild.pop('fitness', None)
-        secondChild.pop('fitnessNormalizado', None)
+        if randint(0, 100)/100 <= crossoverProbability:
 
-        crossoverPoint = randint (0, len(firstChild['solution'])-1)
+            firstChild = copy.deepcopy(parentA)
+            firstChild.pop('fitness', None)
+            firstChild.pop('fitnessNormalizado', None)
 
-        left_A = firstChild['solution'][:crossoverPoint] # guarda o pedaço de vetor parentA de crossoverPoint até o final
-        right_A = firstChild['solution'][crossoverPoint:] # guarda o pedaço de vetor parentA de crossoverPoint até o final
-        left_B = secondChild['solution'][:crossoverPoint] # guarda o pedaço de vetor parentB de crossoverPoint até o final
-        right_B = secondChild['solution'][crossoverPoint:] # guarda o pedaço de vetor parentB de crossoverPoint até o final
+            secondChild = copy.deepcopy(parentB)
+            secondChild.pop('fitness', None)
+            secondChild.pop('fitnessNormalizado', None)
 
-        firstChild['solution'] = left_A + right_A
-        secondChild['solution'] = left_B + right_B
+            crossoverPoint = randint (0, len(firstChild['solution'])-1)
 
-        return [firstChild, secondChild]
+            left_A = firstChild['solution'][:crossoverPoint] # guarda o pedaço de vetor parentA de crossoverPoint até o final
+            right_A = firstChild['solution'][crossoverPoint:] # guarda o pedaço de vetor parentA de crossoverPoint até o final
+            left_B = secondChild['solution'][:crossoverPoint] # guarda o pedaço de vetor parentB de crossoverPoint até o final
+            right_B = secondChild['solution'][crossoverPoint:] # guarda o pedaço de vetor parentB de crossoverPoint até o final
+
+            firstChild['solution'] = left_A + right_A
+            secondChild['solution'] = left_B + right_B
+
+            return [firstChild, secondChild]
+
+        else: 
+            return [parentA, parentB]
 
     def createSolutionArray (self, victArray):
         
@@ -112,7 +120,8 @@ class RescuePlan:
 
         return victArray
         
-    def createFirstGeneration (self, victArray, NUM_SOLUCOES, remainingTime):
+    # cria a primeira geração
+    def createFirstGeneration (self, victArray, POPULACAO, remainingTime):
 
         emptyArray = {}
         emptyArray['solution'] = copy.deepcopy(victArray)
@@ -122,7 +131,7 @@ class RescuePlan:
 
         firstGen = []
 
-        for i in range(NUM_SOLUCOES):
+        for i in range(POPULACAO):
             emptyArray = {}
             emptyArray['solution'] = copy.deepcopy(victArray)
             for vict in emptyArray['solution']:
@@ -137,6 +146,7 @@ class RescuePlan:
 
         return firstGen
 
+    # função de fitness
     def fitnessFunction (self, solution, remainingTime):
 
         gravidadeAcumulada = 0;
@@ -152,6 +162,7 @@ class RescuePlan:
 
         return gravidadeAcumulada
 
+    # elitismo - carrega os 2 melhores para a próxima geração
     def elitismSelection (self, geracao):
 
         # inicializar com soluções quaisquer
@@ -173,6 +184,8 @@ class RescuePlan:
 
         return [bestSolution, secondBestSolution]
 
+
+    # seleção de roleta
     def rwheelSelection (self, currentGeracao, remainingTime):
 
         currentGen = copy.deepcopy(currentGeracao)
@@ -210,15 +223,15 @@ class RescuePlan:
     def createRescuePlan(self):
         agPosition = (self.initialState.row, self.initialState.col)
         basePos = (self.initialState.row, self.initialState.col)
-        remainingTime = self.remainingTime
+        remainingTime = self.remainingTime #tempo que o salvador tem para resgatar as vítimas
         NUM_GERACOES = 100 # número de gerações
-        NUM_SOLUCOES = 100 # número de soluções por geração - vetor de vítimas
+        POPULACAO = 10 # quantidade de soluções em uma população (vetor de vítimas)
         primeiraGeracao = []
         currentGeracao = []
         proximaGeracao = []
 
         ## inicializa um vetor de soluções neutro (todas as vítimas possuem gene = 0)
-        primeiraGeracao = self.createFirstGeneration(self.foundVictims, NUM_SOLUCOES, remainingTime)
+        primeiraGeracao = self.createFirstGeneration(self.foundVictims, POPULACAO, remainingTime)
         currentGeracao = primeiraGeracao
 
         ## imprimir geração
@@ -252,20 +265,17 @@ class RescuePlan:
                 elitismCarryOver = self.elitismSelection(currentGeracao)
                 proximaGeracao = elitismCarryOver
 
-                while len(proximaGeracao) < NUM_SOLUCOES:
+                # enquanto a população não estiver completa
+                while len(proximaGeracao) < POPULACAO:
 
                     filhos = self.rwheelSelection(currentGeracao, remainingTime)
                     proximaGeracao += filhos
 
-                ## realizar mutação
-
+                ## realiza mutação
                 for j in range(len(proximaGeracao)-1):
                     proximaGeracao[j] = self.mutateSolution(proximaGeracao[j], remainingTime)
-                    
-
-                # TODO: realizar fitness pós mutação
                 
-                ## imprimir geração
+                ## imprime a geração
                 print("GEN #", i+2 ,": gAcumulado = ", end=""),
 
                 for solution in currentGeracao:
@@ -330,8 +340,15 @@ class RescuePlan:
         print("S = ", VictSalvasPorTempo)
         print("")
 
+        print("-------- vítimas salvas: --------")
+        ## imprimir melhor solução
+        for vict in primeiraGeracao[0]['solution']:
+            if vict['gene'] == 1:
+                print(vict)
+        print("")
+
         # inicializa primeira geração
-        # for i in NUM_SOLUCOES:
+        # for i in POPULACAO:
 
 
        
